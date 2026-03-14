@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>众声 海报A</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: #0e0818;
+    font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Speed lines background */
+  .speed-lines {
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-conic-gradient(
+        from 0deg at 50% 38%,
+        rgba(255,50,50,0.06) 0deg,
+        transparent 2deg,
+        transparent 8deg
+      );
+    opacity: 0.8;
+  }
+
+  /* Top glow */
+  .top-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(255,50,50,0.2), transparent 70%);
+  }
+
+  /* Main content */
+  .content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    padding: 80px 60px 60px;
+  }
+
+  /* Objection banner */
+  .objection-banner {
+    margin-top: 60px;
+    font-size: 140px;
+    font-weight: 900;
+    color: #ff3030;
+    text-shadow:
+      6px 6px 0 #800000,
+      -4px -4px 0 #800000,
+      0 0 60px rgba(255,50,50,0.5),
+      0 0 120px rgba(255,50,50,0.3);
+    letter-spacing: 16px;
+    text-align: center;
+  }
+
+  /* Courtroom screenshot area */
+  .screenshot-area {
+    margin-top: 50px;
+    width: 920px;
+    height: 520px;
+    border-radius: 20px;
+    border: 3px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    position: relative;
+    background: #12102a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .screenshot-area .mock-court {
+    display: flex;
+    gap: 60px;
+    align-items: center;
+  }
+  .char-card {
+    width: 240px;
+    height: 300px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .char-card.left {
+    background: linear-gradient(135deg, rgba(255,100,60,0.15), rgba(255,60,60,0.08));
+    border: 2px solid rgba(255,100,60,0.3);
+  }
+  .char-card.right {
+    background: linear-gradient(135deg, rgba(60,130,255,0.15), rgba(60,100,255,0.08));
+    border: 2px solid rgba(60,130,255,0.3);
+  }
+  .char-emoji { font-size: 80px; }
+  .char-motto {
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+  }
+  .char-tags {
+    font-size: 14px;
+    color: rgba(255,255,255,0.4);
+  }
+  .char-name {
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 8px;
+  }
+  .char-name.orange { background: #e87040; }
+  .char-name.blue { background: #3080d0; }
+
+  .vs-text {
+    font-size: 72px;
+    font-weight: 900;
+    color: #f8d56e;
+    text-shadow: 0 0 30px rgba(248,213,110,0.5);
+  }
+
+  /* Hook text */
+  .hook {
+    margin-top: 60px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .hook-line1 {
+    font-size: 52px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+  }
+  .hook-line2 {
+    font-size: 68px;
+    font-weight: 900;
+    margin-top: 16px;
+  }
+  .hook-line2 .green {
+    color: #50e0b0;
+    text-shadow: 0 0 30px rgba(80,224,176,0.3);
+  }
+  .hook-line2 .white { color: #fff; }
+
+  /* Golden quote */
+  .golden-quote {
+    margin-top: 50px;
+    font-size: 38px;
+    font-weight: 700;
+    color: #f8d56e;
+    text-align: center;
+    padding: 30px 50px;
+    border-left: 4px solid #f8d56e;
+    border-right: 4px solid #f8d56e;
+    line-height: 1.6;
+  }
+
+  /* Bottom section */
+  .bottom {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding-bottom: 20px;
+  }
+
+  .logo-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .logo-text {
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: 12px;
+    background: linear-gradient(135deg, #f8d56e, #f0a050, #e87850);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo-sub {
+    font-size: 20px;
+    color: #5a5080;
+    letter-spacing: 3px;
+  }
+
+  .qr-area {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  .qr-box {
+    width: 200px;
+    height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    padding: 8px;
+  }
+  .qr-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .qr-info {
+    text-align: left;
+  }
+  .qr-info .line1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .qr-info .line2 {
+    font-size: 22px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 8px;
+  }
+  .qr-info .line3 {
+    font-size: 22px;
+    color: #50e0b0;
+    margin-top: 8px;
+    font-weight: 700;
+  }
+
+  .date-badge {
+    display: inline-block;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #e87850, #f0a050);
+    border-radius: 50px;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 2px;
+  }
+
+  .hashtag {
+    font-size: 22px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="speed-lines"></div>
+<div class="top-glow"></div>
+
+<div class="content">
+
+  <!-- Objection banner -->
+  <div class="objection-banner">我 反 对 ！</div>
+
+  <!-- Mock courtroom -->
+  <div class="screenshot-area">
+    <div class="mock-court">
+      <div style="text-align:center;">
+        <div class="char-card left">
+          <div class="char-emoji">🛋️</div>
+          <div class="char-motto">「卷什么卷，不如躺着」</div>
+          <div class="char-tags">葛优躺 · 佛系青年</div>
+        </div>
+        <div class="char-name orange">躺平派</div>
+      </div>
+      <div class="vs-text">VS</div>
+      <div style="text-align:center;">
+        <div class="char-card right">
+          <div class="char-emoji">😤</div>
+          <div class="char-motto">「机会只留给准备的人」</div>
+          <div class="char-tags">鸡汤达人 · 996福报</div>
+        </div>
+        <div class="char-name blue">奋斗派</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hook text -->
+  <div class="hook">
+    <div class="hook-line1">知乎吵了 354 条回答</div>
+    <div class="hook-line2">
+      <span class="white">AI 发现他们</span>
+      <span class="green"> 80% 意见一致</span>
+    </div>
+  </div>
+
+  <!-- Golden quote -->
+  <div class="golden-quote">
+    「他们以为自己在反对彼此，<br>其实在反对同一堵墙。」
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom">
+    <div class="logo-section">
+      <div>
+        <div class="logo-text">众 声</div>
+        <div class="logo-sub">VOICES — 知乎讨论理解地图</div>
+      </div>
+    </div>
+
+    <div class="qr-area">
+      <div class="qr-box"><img src="qr-wechat.JPG" alt="微信群二维码"></div>
+      <div class="qr-info">
+        <div class="line1">扫码加入体验群</div>
+        <div class="line2">提前体验 · 参与内测</div>
+        <div class="line3">3/20 正式上线 ⚖️</div>
+      </div>
+    </div>
+
+    <div class="hashtag">#A2AforReconnect · 第2届知乎 × Second Me 黑客松</div>
+  </div>
+
+</div>
+
+</body>
+</html>
