@@ -566,9 +566,9 @@
     right: 28px;
     font-size: 13px;
     color: #4a4a6a;
-    animation: pulse 1.5s infinite;
+    animation: hintPulse 1.5s infinite;
   }
-  @keyframes pulse { 50% { opacity: 0.3; } }
+  @keyframes hintPulse { 50% { opacity: 0.3; } }
 
   /* ============ Overlays ============ */
   .objection-overlay {
@@ -1121,7 +1121,7 @@
   <div class="dialogue-box" id="dialogueBox">
     <div class="speaker-name" id="speakerName"></div>
     <div class="dialogue-text" id="dialogueText"></div>
-    <div class="advance-hint">点击继续 ▼</div>
+    <div class="advance-hint" id="advanceHint" style="display:none">点击或按空格继续 ▼</div>
   </div>
 
   <div class="objection-overlay" id="objOverlay">
@@ -1460,6 +1460,7 @@ function typeWrite(text, speakerName, speakerColor) {
   textEl.innerHTML = '';
   fullText = text;
   isTyping = true;
+  $('advanceHint').style.display = 'none';
   let i = 0;
   typeTimer = setInterval(() => {
     if (i < text.length) {
@@ -1470,6 +1471,7 @@ function typeWrite(text, speakerName, speakerColor) {
       clearInterval(typeTimer);
       textEl.innerHTML = text;
       isTyping = false;
+      $('advanceHint').style.display = '';
     }
   }, 35);
 }
@@ -1537,14 +1539,17 @@ async function executeStep(step) {
   updateProgress(step);
 
   switch (s.type) {
-    case 'narrate':
+    case 'narrate': {
       hideChar('left');
       hideChar('right');
       const narrator = CHARS[s.speaker];
-      SFX.gavel();
-      showGavel();
+      if (step === 0 || s.text.includes('开庭') || s.text.includes('真正的分歧') || s.text.includes('真相')) {
+        SFX.gavel();
+        showGavel();
+      }
       typeWrite(s.text, narrator.name, narrator.color);
       break;
+    }
     case 'vs':
       isLocked = true;
       await showVS(s.left, s.right);
@@ -1554,12 +1559,13 @@ async function executeStep(step) {
       isLocked = false;
       await executeStep(currentStep);
       return;
-    case 'say':
+    case 'say': {
       setChar(s.side, s.char, s.expr);
       if (s.effect) showEffect(s.side, s.effect);
       const char = CHARS[s.char];
       typeWrite(s.text, char.name, char.color);
       break;
+    }
     case 'objection':
       isLocked = true;
       await showObjection(s.text, s.style);
@@ -1630,6 +1636,20 @@ document.addEventListener('click', (e) => {
   if (currentStep < SCRIPT.length) executeStep(currentStep);
 });
 
+// Keyboard: Space / Enter to advance
+document.addEventListener('keydown', (e) => {
+  if (e.key !== ' ' && e.key !== 'Enter') return;
+  if (!$('navPage').classList.contains('hidden')) return;
+  if ($('loadingPage').classList.contains('active')) return;
+  if ($('consensusCard').classList.contains('active')) return;
+  if (isLocked) return;
+  e.preventDefault();
+
+  if (isTyping) { skipType(); return; }
+  currentStep++;
+  if (currentStep < SCRIPT.length) executeStep(currentStep);
+});
+
 // Results: action buttons
 $('btnPoster').addEventListener('click', (e) => {
   e.stopPropagation();
@@ -1637,7 +1657,12 @@ $('btnPoster').addEventListener('click', (e) => {
 });
 $('btnQuote').addEventListener('click', (e) => {
   e.stopPropagation();
-  showToast('✍️', '金句已复制到剪贴板', '「他们以为自己在反对彼此，其实在反对同一堵墙。」');
+  const quote = '他们以为自己在反对彼此，其实在反对同一堵墙。 —— 众声 Voices';
+  navigator.clipboard.writeText(quote).then(() => {
+    showToast('✍️', '金句已复制到剪贴板', '「他们以为自己在反对彼此，其实在反对同一堵墙。」');
+  }).catch(() => {
+    showToast('✍️', '复制失败，请手动复制', '「他们以为自己在反对彼此，其实在反对同一堵墙。」');
+  });
 });
 $('btnCircle').addEventListener('click', (e) => {
   e.stopPropagation();
