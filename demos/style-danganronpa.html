@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>众声 — 弹丸论破风格方案</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0010;
+    color: #fff;
+    font-family: "Noto Sans SC", sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+  }
+
+  .badge {
+    position: fixed; top: 12px; left: 12px; z-index: 999;
+    background: #ff2d95; color: #fff; font-size: 11px; font-weight: 900;
+    padding: 4px 12px; border-radius: 2px; letter-spacing: 2px;
+  }
+
+  .hint {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 999; font-size: 12px; color: #555; letter-spacing: 2px;
+    animation: hintBlink 1.5s infinite;
+  }
+  @keyframes hintBlink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  .scene {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .scene.active { opacity: 1; pointer-events: auto; }
+
+  /* Neon grid background */
+  .neon-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(rgba(255,45,149,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,149,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    perspective: 600px;
+  }
+  .neon-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, #0a0010 80%);
+  }
+
+  /* ============ SCENE 1: TITLE ============ */
+  .s1-content {
+    position: relative; z-index: 2;
+    text-align: center;
+  }
+  .s1-content h1 {
+    font-size: 72px; font-weight: 900; letter-spacing: 16px;
+    color: #fff;
+    text-shadow: 0 0 20px #ff2d95, 0 0 60px rgba(255,45,149,0.3);
+    animation: neonFlicker 2s infinite;
+  }
+  @keyframes neonFlicker {
+    0%,100% { text-shadow: 0 0 20px #ff2d95, 0 0 60px rgba(255,45,149,0.3); }
+    5% { text-shadow: 0 0 5px #ff2d95, 0 0 20px rgba(255,45,149,0.1); }
+    6% { text-shadow: 0 0 20px #ff2d95, 0 0 60px rgba(255,45,149,0.3); }
+    50% { text-shadow: 0 0 25px #ff2d95, 0 0 80px rgba(255,45,149,0.4); }
+    52% { text-shadow: 0 0 8px #ff2d95, 0 0 15px rgba(255,45,149,0.1); }
+    53% { text-shadow: 0 0 25px #ff2d95, 0 0 60px rgba(255,45,149,0.3); }
+  }
+  .s1-sub {
+    font-size: 14px; color: #ff2d95; letter-spacing: 8px;
+    margin-top: 12px; font-weight: 700;
+  }
+  .s1-line {
+    width: 200px; height: 2px;
+    background: linear-gradient(90deg, transparent, #ff2d95, transparent);
+    margin: 16px auto 0;
+  }
+
+  /* ============ SCENE 2: VS — Trial Ground ============ */
+  .s2-arena {
+    position: relative; z-index: 2;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .s2-ring {
+    width: 300px; height: 300px;
+    border: 2px solid rgba(255,45,149,0.2);
+    border-radius: 50%;
+    position: relative;
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+  @keyframes ringPulse {
+    0%,100% { box-shadow: 0 0 20px rgba(255,45,149,0.1); }
+    50% { box-shadow: 0 0 40px rgba(255,45,149,0.2); }
+  }
+  .s2-char {
+    position: absolute;
+    text-align: center;
+    animation: charSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .s2-char.left { left: -40px; top: 50%; transform: translateY(-50%); animation-delay: 0.1s; }
+  .s2-char.right { right: -40px; top: 50%; transform: translateY(-50%); animation-delay: 0.2s; }
+  .s2-char .emoji { font-size: 56px; }
+  .s2-char .name { font-size: 12px; font-weight: 900; letter-spacing: 2px; margin-top: 4px; }
+  .s2-char.left .name { color: #ff2d95; }
+  .s2-char.right .name { color: #00d4ff; }
+  @keyframes charSlideIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .s2-vs {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 64px; font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px #ff2d95;
+    animation: vsPop 0.4s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vsPop {
+    from { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
+
+  /* ============ SCENE 3: DEBATE — Flying text ============ */
+  .s3-content {
+    position: relative; z-index: 2;
+    width: 100%; height: 100%;
+  }
+  .s3-speaker {
+    position: absolute; bottom: 200px; left: 50%;
+    transform: translateX(-50%); text-align: center;
+    animation: charPop 0.4s both;
+  }
+  @keyframes charPop {
+    from { transform: translateX(-50%) scale(0.5); opacity: 0; }
+    to { transform: translateX(-50%) scale(1); opacity: 1; }
+  }
+  .s3-speaker .emoji { font-size: 64px; }
+  .s3-speaker .name { font-size: 11px; color: #ff2d95; letter-spacing: 4px; font-weight: 900; }
+
+  /* Flying text bullets */
+  .s3-bullet {
+    position: absolute;
+    font-size: 18px; font-weight: 900; color: #fff;
+    white-space: nowrap;
+    text-shadow: 0 0 10px rgba(255,45,149,0.5);
+    animation: bulletFly 2s linear both;
+  }
+  @keyframes bulletFly {
+    from { opacity: 1; }
+    to { opacity: 0.3; }
+  }
+  .s3-bullet:nth-child(1) {
+    top: 20%; right: -10%;
+    animation: fly1 2s linear both;
+  }
+  .s3-bullet:nth-child(2) {
+    top: 35%; left: -5%;
+    animation: fly2 2.2s 0.3s linear both;
+  }
+  .s3-bullet:nth-child(3) {
+    top: 55%; right: -8%;
+    animation: fly3 1.8s 0.5s linear both;
+  }
+  @keyframes fly1 {
+    from { transform: translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateX(-110vw); opacity: 0.2; }
+  }
+  @keyframes fly2 {
+    from { transform: translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateX(110vw); opacity: 0.2; }
+  }
+  @keyframes fly3 {
+    from { transform: translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateX(-110vw); opacity: 0.2; }
+  }
+
+  /* Dialogue box */
+  .s3-box {
+    position: absolute; bottom: 24px; left: 16px; right: 16px;
+    background: rgba(10, 0, 16, 0.92);
+    border: 2px solid #ff2d95;
+    border-radius: 0;
+    padding: 16px 20px;
+    box-shadow: 0 0 20px rgba(255,45,149,0.15);
+  }
+  .s3-box .speaker { font-size: 11px; color: #ff2d95; font-weight: 900; letter-spacing: 4px; margin-bottom: 6px; }
+  .s3-box .text { font-size: 15px; color: #ddd; line-height: 2; }
+
+  /* ============ SCENE 4: BREAK! ============ */
+  .s4-content {
+    position: relative; z-index: 2;
+    text-align: center;
+  }
+  .s4-flash {
+    position: absolute; inset: 0;
+    background: #ff2d95;
+    animation: flashBang 0.5s both;
+  }
+  @keyframes flashBang {
+    0% { opacity: 1; } 15% { opacity: 0; } 30% { opacity: 0.8; }
+    45% { opacity: 0; } 60% { opacity: 0.4; } 100% { opacity: 0; }
+  }
+  /* Crack lines */
+  .s4-crack {
+    position: absolute; top: 50%; left: 50%;
+    width: 400px; height: 400px;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+  .s4-crack-line {
+    position: absolute; top: 50%; left: 50%;
+    width: 200px; height: 2px;
+    background: linear-gradient(90deg, #ff2d95, transparent);
+    transform-origin: left center;
+    animation: crackSpread 0.4s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes crackSpread {
+    from { width: 0; opacity: 1; }
+    to { width: 200px; opacity: 0.6; }
+  }
+  .s4-crack-line:nth-child(1) { transform: rotate(0deg); }
+  .s4-crack-line:nth-child(2) { transform: rotate(45deg); }
+  .s4-crack-line:nth-child(3) { transform: rotate(90deg); }
+  .s4-crack-line:nth-child(4) { transform: rotate(135deg); }
+  .s4-crack-line:nth-child(5) { transform: rotate(180deg); }
+  .s4-crack-line:nth-child(6) { transform: rotate(225deg); }
+  .s4-crack-line:nth-child(7) { transform: rotate(270deg); }
+  .s4-crack-line:nth-child(8) { transform: rotate(315deg); }
+
+  .s4-text {
+    position: relative; z-index: 10;
+    animation: breakSlam 0.3s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes breakSlam {
+    from { transform: scale(5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .s4-text h1 {
+    font-size: 72px; font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px #ff2d95, 0 0 80px rgba(255,45,149,0.4);
+    letter-spacing: 8px;
+  }
+  .s4-text .sub {
+    font-size: 16px; color: #ff2d95; letter-spacing: 10px;
+    margin-top: 8px; font-weight: 700;
+  }
+  .s4-shake {
+    animation: bigShake 0.5s 0.1s both;
+  }
+  @keyframes bigShake {
+    0%,100% { transform: translate(0); }
+    10% { transform: translate(-10px, 6px) rotate(-1deg); }
+    20% { transform: translate(8px, -8px) rotate(1deg); }
+    30% { transform: translate(-6px, 4px); }
+    40% { transform: translate(4px, -4px); }
+    50% { transform: translate(-2px, 2px); }
+  }
+
+  /* ============ SCENE 5: TRUTH BULLET HIT ============ */
+  .s5-content {
+    position: relative; z-index: 2;
+    text-align: center;
+  }
+  .s5-label {
+    font-size: 14px; color: #00d4ff; letter-spacing: 10px; font-weight: 900;
+    text-shadow: 0 0 15px rgba(0,212,255,0.4);
+    animation: fadeUp 0.4s 0.2s both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .s5-pct {
+    font-size: 100px; font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 40px #ff2d95, 0 0 80px rgba(255,45,149,0.3);
+    line-height: 1;
+    animation: pctPop 0.5s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes pctPop {
+    from { transform: scale(3); opacity: 0; }
+    60% { transform: scale(0.9); }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .s5-desc {
+    font-size: 15px; color: #888; margin-top: 12px;
+    animation: fadeUp 0.4s 0.6s both;
+  }
+  .s5-quote-box {
+    margin-top: 28px; padding: 16px 24px;
+    border: 1px solid rgba(255,45,149,0.3);
+    border-radius: 0;
+    display: inline-block;
+    animation: fadeUp 0.4s 0.8s both;
+    position: relative;
+  }
+  .s5-quote-box::before {
+    content: '';
+    position: absolute; inset: -1px;
+    background: linear-gradient(135deg, #ff2d95, #00d4ff);
+    z-index: -1;
+    opacity: 0.15;
+  }
+  .s5-quote-box p {
+    font-size: 15px; color: #f0c050; font-weight: 700;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="badge">弹丸论破风</div>
+<div class="hint">点击任意位置 →</div>
+
+<!-- Scene 1: Title -->
+<div class="scene active" id="scene1">
+  <div class="neon-bg"></div>
+  <div class="s1-content">
+    <h1>众 声</h1>
+    <div class="s1-sub">VOICES — 知乎讨论理解地图</div>
+    <div class="s1-line"></div>
+  </div>
+</div>
+
+<!-- Scene 2: VS Arena -->
+<div class="scene" id="scene2">
+  <div class="neon-bg"></div>
+  <div class="s2-arena">
+    <div class="s2-ring">
+      <div class="s2-char left">
+        <div class="emoji">🔥</div>
+        <div class="name">躺平派</div>
+      </div>
+      <div class="s2-char right">
+        <div class="emoji">💪</div>
+        <div class="name">奋斗派</div>
+      </div>
+      <div class="s2-vs">VS</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 3: Debate with flying text -->
+<div class="scene" id="scene3">
+  <div class="neon-bg"></div>
+  <div class="s3-content">
+    <div class="s3-bullet" style="top:18%; right:-10%;">996 是对生命的透支！</div>
+    <div class="s3-bullet" style="top:38%; left:-5%;">不奋斗哪来的选择自由？</div>
+    <div class="s3-bullet" style="top:58%; right:-8%;">人不该被工具化！</div>
+
+    <div class="s3-speaker">
+      <div class="emoji">🔥</div>
+      <div class="name">躺平派</div>
+    </div>
+
+    <div class="s3-box">
+      <div class="speaker">躺 平 派</div>
+      <div class="text">996 是对生命的透支！我们拒绝做螺丝钉，人生不只有 KPI！</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 4: BREAK! -->
+<div class="scene" id="scene4">
+  <div class="neon-bg"></div>
+  <div class="s4-flash"></div>
+  <div class="s4-shake">
+    <div class="s4-crack">
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+    </div>
+    <div class="s4-text">
+      <h1>我反对！</h1>
+      <div class="sub">B R E A K !</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 5: Result -->
+<div class="scene" id="scene5">
+  <div class="neon-bg"></div>
+  <div class="s5-content">
+    <div class="s5-label">共 识 达 成</div>
+    <div class="s5-pct">82%</div>
+    <div class="s5-desc">观点一致：人不该被工具化</div>
+    <div class="s5-quote-box">
+      <p>他们以为自己在反对彼此，<br>其实在反对同一堵墙。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scenes = ['scene1','scene2','scene3','scene4','scene5'];
+  let current = 0;
+
+  document.addEventListener('click', () => {
+    const cur = document.getElementById(scenes[current]);
+    cur.classList.remove('active');
+    current = (current + 1) % scenes.length;
+    const next = document.getElementById(scenes[current]);
+    next.innerHTML = next.innerHTML;
+    next.classList.add('active');
+  });
+</script>
+</body>
+</html>

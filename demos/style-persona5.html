@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>众声 — Persona 5 风格方案</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    color: #fff;
+    font-family: "Noto Sans SC", sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+  }
+
+  .badge {
+    position: fixed; top: 12px; left: 12px; z-index: 999;
+    background: #e6002e; color: #fff; font-size: 11px; font-weight: 900;
+    padding: 4px 12px; border-radius: 2px; letter-spacing: 2px;
+    transform: skewX(-8deg);
+  }
+
+  .hint {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 999; font-size: 12px; color: #666; letter-spacing: 2px;
+    animation: hintBlink 1.5s infinite;
+  }
+  @keyframes hintBlink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* ============ SCENE SYSTEM ============ */
+  .scene {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .scene.active { opacity: 1; pointer-events: auto; }
+
+  /* ============ SCENE 1: TITLE ============ */
+  .s1-bg {
+    position: absolute; inset: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+  }
+  /* Diagonal red slash */
+  .s1-slash {
+    position: absolute;
+    width: 200%; height: 120%;
+    background: #e6002e;
+    top: -10%; left: -50%;
+    transform: rotate(-12deg);
+    animation: slashIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform-origin: center;
+    clip-path: polygon(45% 0, 55% 0, 55% 100%, 45% 100%);
+  }
+  @keyframes slashIn {
+    from { clip-path: polygon(50% 0, 50% 0, 50% 100%, 50% 100%); }
+    to { clip-path: polygon(30% 0, 70% 0, 70% 100%, 30% 100%); }
+  }
+  .s1-title {
+    position: relative; z-index: 2;
+    text-align: center;
+    transform: skewX(-6deg);
+  }
+  .s1-title h1 {
+    font-size: 80px; font-weight: 900;
+    letter-spacing: 20px;
+    color: #fff;
+    text-shadow: 4px 4px 0 #e6002e;
+    animation: titleSlam 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+  }
+  @keyframes titleSlam {
+    from { transform: scale(2) translateY(-30px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .s1-sub {
+    font-size: 14px; letter-spacing: 8px; color: #e6002e;
+    margin-top: 12px; font-weight: 700;
+    animation: fadeUp 0.4s 0.6s both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ SCENE 2: VS SPLASH ============ */
+  .s2-bg {
+    position: absolute; inset: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+  }
+  .s2-diagonal {
+    position: absolute; inset: 0;
+  }
+  .s2-left {
+    position: absolute; top: 0; left: 0; width: 50%; height: 100%;
+    background: #1a0a0a;
+    clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+    animation: vsSlideL 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vsSlideL {
+    from { transform: translateX(-100%); } to { transform: translateX(0); }
+  }
+  .s2-right {
+    position: absolute; top: 0; right: 0; width: 50%; height: 100%;
+    background: #0a0a1a;
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+    animation: vsSlideR 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vsSlideR {
+    from { transform: translateX(100%); } to { transform: translateX(0); }
+  }
+  .s2-char {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    text-align: center;
+    z-index: 2;
+  }
+  .s2-char.left { left: 12%; }
+  .s2-char.right { right: 12%; }
+  .s2-emoji { font-size: 72px; animation: charBounce 0.5s 0.3s both; }
+  @keyframes charBounce {
+    from { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .s2-name {
+    font-size: 18px; font-weight: 900; letter-spacing: 4px; margin-top: 8px;
+    transform: skewX(-8deg);
+  }
+  .s2-char.left .s2-name { color: #ff4060; }
+  .s2-char.right .s2-name { color: #4080ff; }
+  .s2-vs {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) skewX(-10deg);
+    z-index: 10;
+    font-size: 96px; font-weight: 900;
+    color: #e6002e;
+    text-shadow: 3px 3px 0 #000, 6px 6px 0 rgba(230, 0, 46, 0.3);
+    animation: vsPop 0.4s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vsPop {
+    from { transform: translate(-50%, -50%) skewX(-10deg) scale(3); opacity: 0; }
+    to { transform: translate(-50%, -50%) skewX(-10deg) scale(1); opacity: 1; }
+  }
+  /* Speed lines */
+  .s2-lines {
+    position: absolute; inset: 0; z-index: 1;
+    background: repeating-linear-gradient(
+      -12deg,
+      transparent, transparent 8px,
+      rgba(230, 0, 46, 0.04) 8px, rgba(230, 0, 46, 0.04) 10px
+    );
+    animation: linesScroll 0.8s linear infinite;
+  }
+  @keyframes linesScroll {
+    to { background-position: 20px 20px; }
+  }
+
+  /* ============ SCENE 3: DIALOGUE ============ */
+  .s3-bg {
+    position: absolute; inset: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+  }
+  .s3-bench {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, #1a1018, #100a14);
+    border-top: 3px solid #e6002e;
+    transform: skewY(-2deg);
+    transform-origin: left;
+  }
+  .s3-char-area {
+    position: absolute; bottom: 180px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    animation: charEnter 0.4s both;
+  }
+  @keyframes charEnter {
+    from { transform: translateX(-50%) translateX(-40px); opacity: 0; }
+    to { transform: translateX(-50%) translateX(0); opacity: 1; }
+  }
+  .s3-char-emoji { font-size: 80px; }
+  .s3-char-name {
+    font-size: 13px; font-weight: 900; color: #e6002e;
+    letter-spacing: 4px; margin-top: 4px;
+    transform: skewX(-6deg);
+  }
+  .s3-dialogue {
+    position: absolute; bottom: 24px; left: 16px; right: 16px;
+    background: rgba(10, 10, 10, 0.92);
+    border: 2px solid #e6002e;
+    border-radius: 0;
+    padding: 20px 24px;
+    transform: skewX(-2deg);
+    z-index: 10;
+  }
+  .s3-speaker {
+    font-size: 11px; font-weight: 900; color: #e6002e;
+    letter-spacing: 6px; margin-bottom: 8px;
+    transform: skewX(-4deg);
+  }
+  .s3-text {
+    font-size: 16px; line-height: 2; color: #ddd;
+  }
+
+  /* ============ SCENE 4: OBJECTION ============ */
+  .s4-bg {
+    position: absolute; inset: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+  }
+  .s4-flash {
+    position: absolute; inset: 0;
+    background: #e6002e;
+    animation: objFlash 0.6s both;
+  }
+  @keyframes objFlash {
+    0% { opacity: 1; } 20% { opacity: 0; } 40% { opacity: 0.7; }
+    60% { opacity: 0; } 80% { opacity: 0.3; } 100% { opacity: 0; }
+  }
+  .s4-lines {
+    position: absolute; inset: 0;
+    background: repeating-conic-gradient(
+      from 0deg,
+      rgba(230, 0, 46, 0.1) 0deg 5deg,
+      transparent 5deg 10deg
+    );
+    background-position: center;
+    animation: linesRotate 3s linear infinite;
+  }
+  @keyframes linesRotate { to { transform: rotate(360deg); } }
+  .s4-text {
+    position: relative; z-index: 10;
+    text-align: center;
+    animation: objSlam 0.3s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+  }
+  @keyframes objSlam {
+    from { transform: scale(4) rotate(-8deg); opacity: 0; }
+    to { transform: scale(1) rotate(-6deg); opacity: 1; }
+  }
+  .s4-text h1 {
+    font-size: 72px; font-weight: 900;
+    color: #fff;
+    text-shadow: 4px 4px 0 #e6002e, 8px 8px 0 rgba(230,0,46,0.3);
+    letter-spacing: 8px;
+    transform: skewX(-10deg);
+  }
+  .s4-text .s4-sub {
+    font-size: 14px; color: #e6002e; letter-spacing: 6px;
+    margin-top: 12px; font-weight: 700;
+  }
+  .s4-shake {
+    animation: objShake 0.4s 0.15s both;
+  }
+  @keyframes objShake {
+    0%,100% { transform: translate(0); }
+    10% { transform: translate(-8px, 4px); }
+    20% { transform: translate(6px, -6px); }
+    30% { transform: translate(-4px, 2px); }
+    40% { transform: translate(4px, -2px); }
+    50% { transform: translate(-2px, 4px); }
+  }
+
+  /* ============ SCENE 5: CONSENSUS ============ */
+  .s5-bg {
+    position: absolute; inset: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+  }
+  .s5-stripe {
+    position: absolute; width: 200%; height: 40px;
+    background: #e6002e;
+    transform: rotate(-12deg) skewX(-15deg);
+    animation: stripeSlide 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .s5-stripe:nth-child(1) { top: 10%; animation-delay: 0s; left: -50%; }
+  .s5-stripe:nth-child(2) { top: 40%; animation-delay: 0.1s; left: -30%; opacity: 0.6; }
+  .s5-stripe:nth-child(3) { top: 75%; animation-delay: 0.2s; left: -60%; opacity: 0.3; }
+  @keyframes stripeSlide {
+    from { transform: rotate(-12deg) skewX(-15deg) translateX(-120%); }
+    to { transform: rotate(-12deg) skewX(-15deg) translateX(0); }
+  }
+  .s5-content {
+    position: relative; z-index: 2;
+    text-align: center;
+  }
+  .s5-label {
+    font-size: 13px; font-weight: 900; color: #e6002e;
+    letter-spacing: 10px; transform: skewX(-6deg);
+    animation: fadeUp 0.4s 0.3s both;
+  }
+  .s5-pct {
+    font-size: 120px; font-weight: 900; color: #fff;
+    text-shadow: 4px 4px 0 #e6002e;
+    transform: skewX(-8deg);
+    animation: titleSlam 0.5s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    line-height: 1;
+  }
+  .s5-desc {
+    font-size: 16px; color: #aaa; margin-top: 16px;
+    transform: skewX(-4deg);
+    animation: fadeUp 0.4s 0.8s both;
+    line-height: 1.8;
+  }
+  .s5-quote {
+    margin-top: 32px; padding: 16px 24px;
+    background: rgba(230, 0, 46, 0.08);
+    border-left: 3px solid #e6002e;
+    transform: skewX(-4deg);
+    animation: fadeUp 0.4s 1s both;
+    max-width: 400px;
+  }
+  .s5-quote p {
+    font-size: 15px; color: #f0c050; font-weight: 700; line-height: 2;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="badge">PERSONA 5 风</div>
+<div class="hint">点击任意位置 →</div>
+
+<!-- Scene 1: Title -->
+<div class="scene active" id="scene1">
+  <div class="s1-bg">
+    <div class="s1-slash"></div>
+  </div>
+  <div class="s1-title">
+    <h1>众 声</h1>
+    <div class="s1-sub">VOICES — 知乎讨论理解地图</div>
+  </div>
+</div>
+
+<!-- Scene 2: VS -->
+<div class="scene" id="scene2">
+  <div class="s2-bg">
+    <div class="s2-lines"></div>
+    <div class="s2-diagonal">
+      <div class="s2-left"></div>
+      <div class="s2-right"></div>
+    </div>
+    <div class="s2-char left">
+      <div class="s2-emoji">🔥</div>
+      <div class="s2-name">躺平派</div>
+    </div>
+    <div class="s2-char right">
+      <div class="s2-emoji">💪</div>
+      <div class="s2-name">奋斗派</div>
+    </div>
+    <div class="s2-vs">VS</div>
+  </div>
+</div>
+
+<!-- Scene 3: Dialogue -->
+<div class="scene" id="scene3">
+  <div class="s3-bg">
+    <div class="s3-bench"></div>
+    <div class="s3-char-area">
+      <div class="s3-char-emoji">🔥</div>
+      <div class="s3-char-name">躺平派</div>
+    </div>
+    <div class="s3-dialogue">
+      <div class="s3-speaker">躺 平 派</div>
+      <div class="s3-text">996 是对生命的透支！我们拒绝做螺丝钉，人生不只有 KPI！</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 4: Objection -->
+<div class="scene" id="scene4">
+  <div class="s4-bg s4-shake">
+    <div class="s4-flash"></div>
+    <div class="s4-lines"></div>
+  </div>
+  <div class="s4-text">
+    <h1>我反对！</h1>
+    <div class="s4-sub">OBJECTION</div>
+  </div>
+</div>
+
+<!-- Scene 5: Consensus -->
+<div class="scene" id="scene5">
+  <div class="s5-bg">
+    <div class="s5-stripe"></div>
+    <div class="s5-stripe"></div>
+    <div class="s5-stripe"></div>
+  </div>
+  <div class="s5-content">
+    <div class="s5-label">共 识 达 成</div>
+    <div class="s5-pct">82%</div>
+    <div class="s5-desc">观点一致：人不该被工具化</div>
+    <div class="s5-quote">
+      <p>他们以为自己在反对彼此，<br>其实在反对同一堵墙。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scenes = ['scene1','scene2','scene3','scene4','scene5'];
+  let current = 0;
+
+  document.addEventListener('click', () => {
+    const cur = document.getElementById(scenes[current]);
+    cur.classList.remove('active');
+    current = (current + 1) % scenes.length;
+    const next = document.getElementById(scenes[current]);
+    // Re-trigger animations by re-inserting
+    next.innerHTML = next.innerHTML;
+    next.classList.add('active');
+  });
+</script>
+</body>
+</html>

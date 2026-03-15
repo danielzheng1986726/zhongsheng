@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>众声 — Balatro 风格方案</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0b3d2e;
+    color: #fff;
+    font-family: "Noto Sans SC", sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+  }
+
+  /* CRT overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 9000; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent, transparent 2px,
+      rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  .badge {
+    position: fixed; top: 12px; left: 12px; z-index: 9999;
+    background: #d4a017; color: #1a1a1a; font-size: 11px; font-weight: 900;
+    padding: 4px 12px; border-radius: 4px; letter-spacing: 2px;
+  }
+
+  .hint {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 2px;
+    animation: hintBlink 1.5s infinite;
+  }
+  @keyframes hintBlink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  .scene {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .scene.active { opacity: 1; pointer-events: auto; }
+
+  /* Felt texture background */
+  .felt {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at center, #0d4a35 0%, #072e1f 60%, #041a12 100%);
+  }
+  .felt::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.5' fill='rgba(255,255,255,0.02)'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  /* ============ SCENE 1: TITLE ============ */
+  .s1-card {
+    position: relative; z-index: 2;
+    width: 280px; height: 380px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #1a1a2e);
+    border-radius: 16px;
+    border: 3px solid #d4a017;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,160,23,0.15);
+    animation: cardDeal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    overflow: hidden;
+  }
+  @keyframes cardDeal {
+    from { transform: translateY(-200px) rotate(-15deg) scale(0.5); opacity: 0; }
+    to { transform: translateY(0) rotate(0) scale(1); opacity: 1; }
+  }
+  /* Holographic sheen */
+  .s1-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 20%,
+      rgba(255, 100, 100, 0.08) 30%,
+      rgba(100, 255, 100, 0.08) 40%,
+      rgba(100, 100, 255, 0.08) 50%,
+      transparent 60%
+    );
+    animation: holoShift 3s ease-in-out infinite;
+    border-radius: 14px;
+  }
+  @keyframes holoShift {
+    0%,100% { transform: translateX(-60%) translateY(-60%); }
+    50% { transform: translateX(60%) translateY(60%); }
+  }
+  .s1-card h1 {
+    font-size: 56px; font-weight: 900; letter-spacing: 12px;
+    color: #d4a017;
+    text-shadow: 0 0 20px rgba(212,160,23,0.4);
+  }
+  .s1-card .sub {
+    font-size: 12px; letter-spacing: 4px; color: #6a8a7a;
+    margin-top: 8px;
+  }
+  .s1-card .suit {
+    position: absolute; top: 16px; left: 16px;
+    font-size: 24px; color: #d4a017; font-weight: 900;
+  }
+  .s1-card .suit-br {
+    position: absolute; bottom: 16px; right: 16px;
+    font-size: 24px; color: #d4a017; font-weight: 900;
+    transform: rotate(180deg);
+  }
+
+  /* ============ SCENE 2: VS ============ */
+  .s2-cards {
+    position: relative; z-index: 2;
+    display: flex; gap: 24px; align-items: center;
+  }
+  .vs-card {
+    width: 140px; height: 200px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 12px;
+    border: 2px solid;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .vs-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 20%,
+      rgba(255, 100, 100, 0.06) 30%,
+      rgba(100, 255, 100, 0.06) 40%,
+      rgba(100, 100, 255, 0.06) 50%,
+      transparent 60%
+    );
+    animation: holoShift 3s ease-in-out infinite;
+    border-radius: 10px;
+  }
+  .vs-card.red { border-color: #e04060; animation: cardDealL 0.5s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .vs-card.blue { border-color: #4080e0; animation: cardDealR 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes cardDealL {
+    from { transform: translateX(-100px) rotate(-20deg); opacity: 0; }
+    to { transform: translateX(0) rotate(-3deg); opacity: 1; }
+  }
+  @keyframes cardDealR {
+    from { transform: translateX(100px) rotate(20deg); opacity: 0; }
+    to { transform: translateX(0) rotate(3deg); opacity: 1; }
+  }
+  .vs-card .emoji { font-size: 48px; }
+  .vs-card .name {
+    font-size: 14px; font-weight: 900; margin-top: 8px;
+    letter-spacing: 2px;
+  }
+  .vs-card.red .name { color: #e04060; }
+  .vs-card.blue .name { color: #4080e0; }
+  .s2-vs {
+    font-size: 48px; font-weight: 900; color: #d4a017;
+    text-shadow: 0 0 20px rgba(212,160,23,0.5);
+    animation: vsBounce 0.4s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vsBounce {
+    from { transform: scale(3); opacity: 0; }
+    60% { transform: scale(0.85); }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* ============ SCENE 3: DIALOGUE ============ */
+  .s3-area {
+    position: relative; z-index: 2;
+    width: 90%; max-width: 420px;
+  }
+  .s3-char {
+    text-align: center; margin-bottom: 16px;
+    animation: charPop 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes charPop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .s3-char .emoji { font-size: 64px; }
+  .s3-char .name { font-size: 12px; color: #e04060; letter-spacing: 4px; font-weight: 900; margin-top: 4px; }
+  .s3-box {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #d4a017;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(212,160,23,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .s3-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(212,160,23,0.03) 50%, transparent 70%);
+    animation: holoShift 4s ease-in-out infinite;
+    border-radius: 10px;
+  }
+  .s3-box .speaker {
+    font-size: 11px; color: #d4a017; font-weight: 900;
+    letter-spacing: 4px; margin-bottom: 8px;
+  }
+  .s3-box .text {
+    font-size: 15px; color: #c0d0c0; line-height: 2;
+    position: relative;
+  }
+
+  /* ============ SCENE 4: OBJECTION ============ */
+  .s4-card {
+    position: relative; z-index: 2;
+    width: 300px; height: 200px;
+    background: linear-gradient(135deg, #3a0a0a, #2a0a1a);
+    border-radius: 16px;
+    border: 3px solid #e04060;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    box-shadow: 0 0 40px rgba(224,64,96,0.3), 0 8px 40px rgba(0,0,0,0.5);
+    animation: objCard 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    overflow: hidden;
+  }
+  @keyframes objCard {
+    from { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .s4-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 20%, rgba(255,50,50,0.08) 40%, transparent 60%);
+    animation: holoShift 2s ease-in-out infinite;
+    border-radius: 14px;
+  }
+  .s4-card h1 {
+    font-size: 52px; font-weight: 900; color: #fff;
+    text-shadow: 0 0 20px rgba(224,64,96,0.6);
+  }
+  .s4-card .sub {
+    font-size: 12px; color: #e04060; letter-spacing: 6px;
+    margin-top: 8px; font-weight: 700;
+  }
+  /* Chips flying out */
+  .s4-chip {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    animation: chipFly 1s ease-out both;
+  }
+  @keyframes chipFly {
+    from { transform: translate(0, 0) scale(0); opacity: 1; }
+    to { opacity: 0; }
+  }
+  .s4-chip:nth-child(1) { background: #d4a017; top: 50%; left: 50%; animation-delay: 0.1s; --tx: -80px; --ty: -60px; }
+  .s4-chip:nth-child(2) { background: #e04060; top: 50%; left: 50%; animation-delay: 0.15s; --tx: 70px; --ty: -80px; }
+  .s4-chip:nth-child(3) { background: #4080e0; top: 50%; left: 50%; animation-delay: 0.2s; --tx: -60px; --ty: 70px; }
+  .s4-chip:nth-child(4) { background: #50c080; top: 50%; left: 50%; animation-delay: 0.25s; --tx: 90px; --ty: 40px; }
+
+  .s4-shake {
+    animation: shake 0.4s both;
+  }
+  @keyframes shake {
+    0%,100% { transform: translate(0); }
+    10% { transform: translate(-6px, 3px); }
+    30% { transform: translate(4px, -4px); }
+    50% { transform: translate(-3px, 2px); }
+    70% { transform: translate(3px, -1px); }
+  }
+
+  /* ============ SCENE 5: RESULT ============ */
+  .s5-area {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+  }
+  .s5-result-card {
+    width: 260px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #50c080;
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(80,192,128,0.15), 0 8px 40px rgba(0,0,0,0.4);
+    animation: cardDeal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    position: relative;
+    overflow: hidden;
+  }
+  .s5-result-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 20%, rgba(80,255,128,0.04) 40%, rgba(80,128,255,0.04) 60%, transparent 80%);
+    animation: holoShift 3s ease-in-out infinite;
+    border-radius: 14px;
+  }
+  .s5-label {
+    font-size: 12px; color: #50c080; letter-spacing: 6px; font-weight: 900;
+  }
+  .s5-pct {
+    font-size: 80px; font-weight: 900; color: #d4a017;
+    text-shadow: 0 0 20px rgba(212,160,23,0.3);
+    line-height: 1.1; margin: 8px 0;
+  }
+  .s5-desc {
+    font-size: 14px; color: #8aa89a; line-height: 1.8;
+  }
+  .s5-quote {
+    width: 260px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(212,160,23,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    animation: cardDeal 0.6s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    position: relative;
+    overflow: hidden;
+  }
+  .s5-quote::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(212,160,23,0.04) 50%, transparent 70%);
+    animation: holoShift 4s ease-in-out infinite;
+    border-radius: 10px;
+  }
+  .s5-quote p {
+    font-size: 14px; color: #d4a017; line-height: 2;
+    font-weight: 700; position: relative;
+  }
+</style>
+</head>
+<body>
+
+<div class="badge">BALATRO 风</div>
+<div class="hint">点击任意位置 →</div>
+
+<div class="scene active" id="scene1">
+  <div class="felt"></div>
+  <div class="s1-card">
+    <div class="suit">♠</div>
+    <h1>众声</h1>
+    <div class="sub">VOICES</div>
+    <div class="suit-br">♠</div>
+  </div>
+</div>
+
+<div class="scene" id="scene2">
+  <div class="felt"></div>
+  <div class="s2-cards">
+    <div class="vs-card red">
+      <div class="emoji">🔥</div>
+      <div class="name">躺平派</div>
+    </div>
+    <div class="s2-vs">VS</div>
+    <div class="vs-card blue">
+      <div class="emoji">💪</div>
+      <div class="name">奋斗派</div>
+    </div>
+  </div>
+</div>
+
+<div class="scene" id="scene3">
+  <div class="felt"></div>
+  <div class="s3-area">
+    <div class="s3-char">
+      <div class="emoji">🔥</div>
+      <div class="name">躺平派</div>
+    </div>
+    <div class="s3-box">
+      <div class="speaker">躺 平 派</div>
+      <div class="text">996 是对生命的透支！我们拒绝做螺丝钉，人生不只有 KPI！</div>
+    </div>
+  </div>
+</div>
+
+<div class="scene" id="scene4">
+  <div class="felt"></div>
+  <div class="s4-shake">
+    <div class="s4-card">
+      <h1>我反对！</h1>
+      <div class="sub">OBJECTION</div>
+    </div>
+  </div>
+  <div class="s4-chip" style="animation: chipFly 0.8s 0.1s ease-out both; transform: translate(-80px, -60px) scale(1);"></div>
+  <div class="s4-chip" style="animation: chipFly 0.8s 0.15s ease-out both; transform: translate(70px, -80px) scale(1);"></div>
+  <div class="s4-chip" style="animation: chipFly 0.8s 0.2s ease-out both; transform: translate(-60px, 70px) scale(1);"></div>
+  <div class="s4-chip" style="animation: chipFly 0.8s 0.25s ease-out both; transform: translate(90px, 40px) scale(1);"></div>
+</div>
+
+<div class="scene" id="scene5">
+  <div class="felt"></div>
+  <div class="s5-area">
+    <div class="s5-result-card">
+      <div class="s5-label">共 识 达 成</div>
+      <div class="s5-pct">82%</div>
+      <div class="s5-desc">观点一致：人不该被工具化</div>
+    </div>
+    <div class="s5-quote">
+      <p>他们以为自己在反对彼此，<br>其实在反对同一堵墙。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scenes = ['scene1','scene2','scene3','scene4','scene5'];
+  let current = 0;
+
+  document.addEventListener('click', () => {
+    const cur = document.getElementById(scenes[current]);
+    cur.classList.remove('active');
+    current = (current + 1) % scenes.length;
+    const next = document.getElementById(scenes[current]);
+    next.innerHTML = next.innerHTML;
+    next.classList.add('active');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>众声 — 混搭风格方案</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #f0c040;
+    --red: #e63050;
+    --cyan: #00d4ff;
+    --bg: #08061a;
+    --card-bg: linear-gradient(135deg, #12102a, #1a1632);
+  }
+
+  body {
+    background: var(--bg);
+    color: #fff;
+    font-family: "Noto Sans SC", sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+  }
+
+  /* CRT scanlines (Balatro) */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 9000; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px,
+      rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 6px
+    );
+  }
+
+  .badge {
+    position: fixed; top: 12px; left: 12px; z-index: 9999;
+    background: linear-gradient(135deg, var(--red), #ff6040);
+    color: #fff; font-size: 11px; font-weight: 900;
+    padding: 4px 14px; border-radius: 2px; letter-spacing: 2px;
+    transform: skewX(-6deg);
+  }
+
+  .hint {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; font-size: 12px; color: #444; letter-spacing: 2px;
+    animation: hintBlink 1.5s infinite;
+  }
+  @keyframes hintBlink { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  .scene {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .scene.active { opacity: 1; pointer-events: auto; }
+
+  /* Subtle grid (Danganronpa) + vignette */
+  .stage-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(rgba(240,192,64,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,192,64,0.015) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .stage-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, var(--bg) 80%);
+  }
+
+  /* Holographic sheen (Balatro) — reusable */
+  .holo::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 20%,
+      rgba(255, 80, 80, 0.06) 30%,
+      rgba(80, 255, 160, 0.06) 42%,
+      rgba(80, 160, 255, 0.06) 54%,
+      transparent 65%
+    );
+    animation: holoShift 4s ease-in-out infinite;
+    border-radius: inherit;
+  }
+  @keyframes holoShift {
+    0%,100% { transform: translateX(-70%) translateY(-70%); }
+    50% { transform: translateX(70%) translateY(70%); }
+  }
+
+  /* ============ SCENE 1: TITLE (P5 slash + Balatro card) ============ */
+  .s1-slash {
+    position: absolute;
+    width: 200%; height: 130%;
+    top: -15%; left: -50%;
+    background: var(--red);
+    clip-path: polygon(46% 0, 54% 0, 54% 100%, 46% 100%);
+    animation: slashWipe 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    opacity: 0.15;
+  }
+  @keyframes slashWipe {
+    from { clip-path: polygon(50% 0, 50% 0, 50% 100%, 50% 100%); }
+    to { clip-path: polygon(35% 0, 65% 0, 65% 100%, 35% 100%); }
+  }
+  .s1-card {
+    position: relative; z-index: 2;
+    width: 280px; padding: 48px 32px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 2px solid var(--gold);
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(240,192,64,0.1);
+    animation: cardDeal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    overflow: hidden;
+    transform: skewX(-2deg);
+  }
+  @keyframes cardDeal {
+    from { transform: translateY(-150px) rotate(-12deg) scale(0.5) skewX(-2deg); opacity: 0; }
+    to { transform: translateY(0) rotate(0) scale(1) skewX(-2deg); opacity: 1; }
+  }
+  .s1-card h1 {
+    font-size: 64px; font-weight: 900; letter-spacing: 16px;
+    color: var(--gold);
+    text-shadow: 3px 3px 0 rgba(230,48,80,0.4), 0 0 20px rgba(240,192,64,0.3);
+  }
+  .s1-card .sub {
+    font-size: 12px; letter-spacing: 6px; color: #5a5080;
+    margin-top: 8px;
+  }
+
+  /* ============ SCENE 2: VS (P5 diagonal + Balatro cards) ============ */
+  .s2-split-l {
+    position: absolute; top: 0; left: 0; width: 50%; height: 100%;
+    background: rgba(230,48,80,0.04);
+    clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+    animation: splitL 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes splitL { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+  .s2-split-r {
+    position: absolute; top: 0; right: 0; width: 50%; height: 100%;
+    background: rgba(0,212,255,0.04);
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
+    animation: splitR 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes splitR { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  /* Speed lines (P5) */
+  .s2-lines {
+    position: absolute; inset: 0; z-index: 1;
+    background: repeating-linear-gradient(
+      -10deg, transparent, transparent 10px,
+      rgba(240,192,64,0.02) 10px, rgba(240,192,64,0.02) 12px
+    );
+    animation: linesScroll 1s linear infinite;
+  }
+  @keyframes linesScroll { to { background-position: 24px 24px; } }
+
+  .s2-cards {
+    position: relative; z-index: 2;
+    display: flex; gap: 20px; align-items: center;
+  }
+  .vs-card {
+    width: 130px; height: 190px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 2px solid;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+    position: relative; overflow: hidden;
+  }
+  .vs-card.red {
+    border-color: var(--red);
+    transform: rotate(-4deg) skewX(-3deg);
+    animation: dealL 0.5s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .vs-card.blue {
+    border-color: var(--cyan);
+    transform: rotate(4deg) skewX(3deg);
+    animation: dealR 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes dealL {
+    from { transform: translateX(-80px) rotate(-20deg) skewX(-3deg); opacity: 0; }
+    to { transform: translateX(0) rotate(-4deg) skewX(-3deg); opacity: 1; }
+  }
+  @keyframes dealR {
+    from { transform: translateX(80px) rotate(20deg) skewX(3deg); opacity: 0; }
+    to { transform: translateX(0) rotate(4deg) skewX(3deg); opacity: 1; }
+  }
+  .vs-card .emoji { font-size: 48px; }
+  .vs-card .name { font-size: 13px; font-weight: 900; margin-top: 6px; letter-spacing: 2px; }
+  .vs-card.red .name { color: var(--red); }
+  .vs-card.blue .name { color: var(--cyan); }
+  .s2-vs {
+    font-size: 56px; font-weight: 900; color: var(--gold);
+    text-shadow: 3px 3px 0 rgba(230,48,80,0.3), 0 0 20px rgba(240,192,64,0.3);
+    transform: skewX(-8deg);
+    animation: vsBounce 0.4s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes vsBounce {
+    from { transform: skewX(-8deg) scale(4); opacity: 0; }
+    60% { transform: skewX(-8deg) scale(0.85); }
+    to { transform: skewX(-8deg) scale(1); opacity: 1; }
+  }
+
+  /* ============ SCENE 3: DEBATE (Danganronpa bullets + P5 dialogue) ============ */
+  .s3-area { position: relative; z-index: 2; width: 100%; height: 100%; }
+  .s3-bullet {
+    position: absolute;
+    font-size: 16px; font-weight: 900; color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+    text-shadow: 0 0 10px rgba(240,192,64,0.3);
+  }
+  .s3-bullet:nth-child(1) { top: 18%; right: -10%; animation: fly1 2.5s linear both; }
+  .s3-bullet:nth-child(2) { top: 40%; left: -5%; animation: fly2 2.8s 0.3s linear both; }
+  .s3-bullet:nth-child(3) { top: 60%; right: -8%; animation: fly3 2.2s 0.5s linear both; }
+  @keyframes fly1 {
+    from { transform: translateX(0); opacity: 0; } 8% { opacity: 0.8; }
+    to { transform: translateX(-115vw); opacity: 0.1; }
+  }
+  @keyframes fly2 {
+    from { transform: translateX(0); opacity: 0; } 8% { opacity: 0.8; }
+    to { transform: translateX(115vw); opacity: 0.1; }
+  }
+  @keyframes fly3 {
+    from { transform: translateX(0); opacity: 0; } 8% { opacity: 0.8; }
+    to { transform: translateX(-115vw); opacity: 0.1; }
+  }
+  .s3-char {
+    position: absolute; bottom: 190px; left: 50%;
+    transform: translateX(-50%); text-align: center;
+    animation: charPop 0.4s both;
+  }
+  @keyframes charPop {
+    from { transform: translateX(-50%) scale(0.5); opacity: 0; }
+    to { transform: translateX(-50%) scale(1); opacity: 1; }
+  }
+  .s3-char .emoji { font-size: 64px; }
+  .s3-char .name { font-size: 11px; color: var(--red); letter-spacing: 4px; font-weight: 900; }
+  /* P5-style skewed dialogue box + Balatro border glow */
+  .s3-box {
+    position: absolute; bottom: 24px; left: 16px; right: 16px;
+    background: var(--card-bg);
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 18px 22px;
+    transform: skewX(-2deg);
+    box-shadow: 0 0 15px rgba(240,192,64,0.08);
+    overflow: hidden;
+  }
+  .s3-box::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(240,192,64,0.03) 50%, transparent 70%);
+    animation: holoShift 4s ease-in-out infinite;
+  }
+  .s3-box .speaker {
+    font-size: 11px; color: var(--gold); font-weight: 900;
+    letter-spacing: 6px; margin-bottom: 6px;
+    transform: skewX(-4deg);
+  }
+  .s3-box .text { font-size: 15px; color: #c0c0d0; line-height: 2; position: relative; }
+
+  /* ============ SCENE 4: OBJECTION (P5 slam + Danganronpa crack + Balatro shake) ============ */
+  .s4-flash {
+    position: absolute; inset: 0;
+    background: var(--red);
+    animation: flashBang 0.5s both;
+    z-index: 1;
+  }
+  @keyframes flashBang {
+    0% { opacity: 1; } 15% { opacity: 0; } 30% { opacity: 0.7; }
+    50% { opacity: 0; } 70% { opacity: 0.2; } 100% { opacity: 0; }
+  }
+  /* Radial speed lines (Danganronpa) */
+  .s4-radial {
+    position: absolute; inset: 0; z-index: 2;
+    background: repeating-conic-gradient(
+      from 0deg,
+      rgba(240,192,64,0.06) 0deg 4deg,
+      transparent 4deg 8deg
+    );
+    animation: radialSpin 4s linear infinite;
+  }
+  @keyframes radialSpin { to { transform: rotate(360deg); } }
+  /* Crack lines (Danganronpa) */
+  .s4-crack {
+    position: absolute; top: 50%; left: 50%;
+    width: 400px; height: 400px;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+  }
+  .s4-crack-line {
+    position: absolute; top: 50%; left: 50%;
+    width: 180px; height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    transform-origin: left center;
+    animation: crackSpread 0.4s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes crackSpread {
+    from { width: 0; opacity: 1; } to { width: 180px; opacity: 0.5; }
+  }
+  .s4-crack-line:nth-child(1) { transform: rotate(0deg); }
+  .s4-crack-line:nth-child(2) { transform: rotate(60deg); }
+  .s4-crack-line:nth-child(3) { transform: rotate(120deg); }
+  .s4-crack-line:nth-child(4) { transform: rotate(180deg); }
+  .s4-crack-line:nth-child(5) { transform: rotate(240deg); }
+  .s4-crack-line:nth-child(6) { transform: rotate(300deg); }
+  /* P5-style skewed slam text */
+  .s4-text {
+    position: relative; z-index: 10;
+    text-align: center;
+    animation: objSlam 0.3s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes objSlam {
+    from { transform: scale(5) skewX(-12deg); opacity: 0; }
+    to { transform: scale(1) skewX(-8deg); opacity: 1; }
+  }
+  .s4-text h1 {
+    font-size: 72px; font-weight: 900; color: #fff;
+    text-shadow: 4px 4px 0 var(--red), 0 0 30px rgba(240,192,64,0.3);
+    letter-spacing: 8px;
+  }
+  .s4-text .sub {
+    font-size: 13px; color: var(--gold); letter-spacing: 8px;
+    margin-top: 8px; font-weight: 700;
+  }
+  .s4-shake-wrap {
+    animation: shake 0.5s 0.08s both;
+  }
+  @keyframes shake {
+    0%,100% { transform: translate(0); }
+    10% { transform: translate(-8px, 5px) rotate(-1deg); }
+    20% { transform: translate(6px, -7px) rotate(1deg); }
+    30% { transform: translate(-5px, 3px); }
+    40% { transform: translate(4px, -3px); }
+    50% { transform: translate(-2px, 2px); }
+  }
+
+  /* ============ SCENE 5: CONSENSUS (Balatro result card + P5 stripes) ============ */
+  .s5-stripe {
+    position: absolute; width: 200%; height: 30px;
+    background: var(--red);
+    transform: rotate(-10deg) skewX(-12deg);
+    animation: stripeSlide 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    opacity: 0.08;
+  }
+  .s5-stripe:nth-child(1) { top: 15%; left: -50%; animation-delay: 0s; }
+  .s5-stripe:nth-child(2) { top: 50%; left: -30%; animation-delay: 0.1s; opacity: 0.05; }
+  .s5-stripe:nth-child(3) { top: 80%; left: -60%; animation-delay: 0.2s; opacity: 0.03; }
+  @keyframes stripeSlide {
+    from { transform: rotate(-10deg) skewX(-12deg) translateX(-120%); }
+    to { transform: rotate(-10deg) skewX(-12deg) translateX(0); }
+  }
+  .s5-area {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+  }
+  .s5-result {
+    width: 280px;
+    background: var(--card-bg);
+    border: 2px solid rgba(80,224,176,0.5);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(80,224,176,0.1), 0 8px 40px rgba(0,0,0,0.4);
+    animation: cardDeal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    position: relative; overflow: hidden;
+    transform: skewX(-2deg);
+  }
+  .s5-label {
+    font-size: 12px; color: #50e0b0; letter-spacing: 8px; font-weight: 900;
+    transform: skewX(-4deg);
+  }
+  .s5-pct {
+    font-size: 88px; font-weight: 900; color: var(--gold);
+    text-shadow: 3px 3px 0 rgba(230,48,80,0.3), 0 0 20px rgba(240,192,64,0.2);
+    line-height: 1.1; margin: 8px 0;
+    transform: skewX(-4deg);
+    animation: pctPop 0.5s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes pctPop {
+    from { transform: skewX(-4deg) scale(3); opacity: 0; }
+    60% { transform: skewX(-4deg) scale(0.9); }
+    to { transform: skewX(-4deg) scale(1); opacity: 1; }
+  }
+  .s5-desc {
+    font-size: 13px; color: #7a8a9a; line-height: 1.8;
+    transform: skewX(-2deg);
+  }
+  .s5-quote {
+    width: 280px;
+    background: var(--card-bg);
+    border: 1px solid rgba(240,192,64,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    animation: cardDeal 0.6s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    position: relative; overflow: hidden;
+    transform: skewX(-2deg);
+  }
+  .s5-quote p {
+    font-size: 14px; color: var(--gold); font-weight: 700;
+    line-height: 2; position: relative;
+  }
+</style>
+</head>
+<body>
+
+<div class="badge">混搭方案</div>
+<div class="hint">点击任意位置 →</div>
+
+<!-- Scene 1: Title -->
+<div class="scene active" id="scene1">
+  <div class="stage-bg"></div>
+  <div class="s1-slash"></div>
+  <div class="s1-card holo">
+    <h1>众声</h1>
+    <div class="sub">VOICES — 知乎讨论理解地图</div>
+  </div>
+</div>
+
+<!-- Scene 2: VS -->
+<div class="scene" id="scene2">
+  <div class="stage-bg"></div>
+  <div class="s2-split-l"></div>
+  <div class="s2-split-r"></div>
+  <div class="s2-lines"></div>
+  <div class="s2-cards">
+    <div class="vs-card red holo">
+      <div class="emoji">🔥</div>
+      <div class="name">躺平派</div>
+    </div>
+    <div class="s2-vs">VS</div>
+    <div class="vs-card blue holo">
+      <div class="emoji">💪</div>
+      <div class="name">奋斗派</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 3: Debate -->
+<div class="scene" id="scene3">
+  <div class="stage-bg"></div>
+  <div class="s3-area">
+    <div class="s3-bullet" style="top:18%; right:-10%;">996 是对生命的透支！</div>
+    <div class="s3-bullet" style="top:40%; left:-5%;">不奋斗哪来的选择自由？</div>
+    <div class="s3-bullet" style="top:60%; right:-8%;">人不该被工具化！</div>
+
+    <div class="s3-char">
+      <div class="emoji">🔥</div>
+      <div class="name">躺平派</div>
+    </div>
+
+    <div class="s3-box holo">
+      <div class="speaker">躺 平 派</div>
+      <div class="text">996 是对生命的透支！我们拒绝做螺丝钉，人生不只有 KPI！</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 4: Objection -->
+<div class="scene" id="scene4">
+  <div class="stage-bg"></div>
+  <div class="s4-flash"></div>
+  <div class="s4-shake-wrap">
+    <div class="s4-radial"></div>
+    <div class="s4-crack">
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+      <div class="s4-crack-line"></div>
+    </div>
+    <div class="s4-text">
+      <h1>我反对！</h1>
+      <div class="sub">OBJECTION</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 5: Consensus -->
+<div class="scene" id="scene5">
+  <div class="stage-bg"></div>
+  <div class="s5-stripe"></div>
+  <div class="s5-stripe"></div>
+  <div class="s5-stripe"></div>
+  <div class="s5-area">
+    <div class="s5-result holo">
+      <div class="s5-label">共 识 达 成</div>
+      <div class="s5-pct">82%</div>
+      <div class="s5-desc">观点一致：人不该被工具化</div>
+    </div>
+    <div class="s5-quote holo">
+      <p>他们以为自己在反对彼此，<br>其实在反对同一堵墙。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scenes = ['scene1','scene2','scene3','scene4','scene5'];
+  let current = 0;
+
+  document.addEventListener('click', () => {
+    const cur = document.getElementById(scenes[current]);
+    cur.classList.remove('active');
+    current = (current + 1) % scenes.length;
+    const next = document.getElementById(scenes[current]);
+    next.innerHTML = next.innerHTML;
+    next.classList.add('active');
+  });
+</script>
+</body>
+</html>
