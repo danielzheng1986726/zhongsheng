@@ -1187,7 +1187,7 @@
       <span class="btn-icon">✍️</span> 复制金句卡片
     </button>
     <button class="action-btn zhihu" id="btnCircle">
-      <span class="btn-icon">💬</span> 发布到知乎圈子
+      <span class="btn-icon">💬</span> 分享到知乎圈子
       <span class="step-api-label api-zhihu" style="margin-left:2px">圈子 API</span>
     </button>
     <button class="action-btn secondme" id="btnMemory">
@@ -1273,7 +1273,7 @@ $('soundToggle').addEventListener('click', (e) => {
 });
 
 // --- Loading sequence (SSE-powered) ---
-async function startLoading(topic) {
+async function startLoading(topic, itemData) {
   debateTopic = topic;
   $('loadingTitle').textContent = `「${topic}」`;
   $('navPage').classList.add('hidden');
@@ -1287,11 +1287,21 @@ async function startLoading(topic) {
   steps.forEach(id => { const el = $(id); el.classList.remove('active', 'done'); });
   bar.style.width = '0%';
 
+  // Build request body — include answer snippets from hotlist if available
+  const reqBody = { topic };
+  if (itemData && itemData.answers && itemData.answers.length) {
+    reqBody.context_answers = itemData.answers.slice(0, 5).map(a => ({
+      author: a.author_name || '',
+      excerpt: (a.content_text || a.content || '').slice(0, 300),
+      voteup: a.voteup_count || 0,
+    }));
+  }
+
   try {
     const resp = await fetch('/api/debate/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic }),
+      body: JSON.stringify(reqBody),
     });
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
@@ -1593,13 +1603,14 @@ async function loadHotlist() {
     const resp = await fetch('/api/hotlist');
     const data = await resp.json();
     const items = data.items || [];
+    window._hotlistItems = items; // store for passing to debate API
     list.innerHTML = items.map((item, i) => {
       const title = item.title || '';
       const info = item.interaction_info || {};
       const answers = info.comment_count || item.answer_count || '';
       const heat = item.heat_score ? (item.heat_score > 10000 ? (item.heat_score/10000).toFixed(1)+'万' : item.heat_score) : (item.heat || '');
       return `
-      <div class="case-card" data-topic="${title.replace(/"/g, '&quot;')}">
+      <div class="case-card" data-idx="${i}" data-topic="${title.replace(/"/g, '&quot;')}">
         <div class="case-rank ${i < 2 ? 'top' : 'normal'}">${i + 1}</div>
         <div class="case-question">${title}</div>
         <div class="case-meta">
@@ -1612,11 +1623,13 @@ async function loadHotlist() {
     list.innerHTML = '<div style="color:#666;text-align:center;padding:20px">加载热榜失败，请输入话题</div>';
   }
 
-  // Bind click events on dynamic cards
+  // Bind click events on dynamic cards — pass full item data
   list.querySelectorAll('.case-card').forEach(card => {
     card.addEventListener('click', () => {
       const topic = card.dataset.topic;
-      if (topic) startLoading(topic);
+      const idx = parseInt(card.dataset.idx);
+      const itemData = (window._hotlistItems || [])[idx] || null;
+      if (topic) startLoading(topic, itemData);
     });
   });
 }
@@ -1696,24 +1709,17 @@ $('btnQuote').addEventListener('click', (e) => {
     showToast('✍️', '复制失败，请手动复制', goldenQuote);
   });
 });
-$('btnCircle').addEventListener('click', async (e) => {
+$('btnCircle').addEventListener('click', (e) => {
   e.stopPropagation();
   const content = `【众声法庭】关于「${debateTopic}」的辩论结束了！\n\n💡 金句：${goldenQuote}\n\n${warmthMessage.replace(/<[^>]+>/g, '')}\n\n来众声法庭，看看你关心的话题背后藏着什么共识 👉`;
-  try {
-    const resp = await fetch('/api/zhihu/publish', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
-    });
-    const data = await resp.json();
-    if (data.ok) {
-      showToast('💬', '已发布到知乎圈子', '辩论结果已同步到社区', 2500);
-    } else {
-      showToast('⚠️', '发布失败', data.error || '请稍后重试', 2500);
-    }
-  } catch (err) {
-    showToast('❌', '发布失败', '网络错误', 2500);
-  }
+  navigator.clipboard.writeText(content).then(() => {
+    showToast('💬', '文案已复制', '即将跳转到知乎圈子，粘贴发布即可', 2500);
+    setTimeout(() => {
+      window.open('https://www.zhihu.com/club/2001009660925334090', '_blank');
+    }, 1200);
+  }).catch(() => {
+    showToast('⚠️', '复制失败', '请手动复制文案', 2500);
+  });
 });
 $('btnMemory').addEventListener('click', async (e) => {
   e.stopPropagation();

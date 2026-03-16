@@ -22,7 +22,7 @@ async def hotlist():
 async def generate_debate(request: Request):
     """Generate a full courtroom debate via SSE.
 
-    Body: {"topic": "..."}
+    Body: {"topic": "...", "context_answers": [...]}
     Yields SSE events with phase updates, then final 'done' with full payload.
     """
     body = await request.json()
@@ -30,11 +30,17 @@ async def generate_debate(request: Request):
     if not topic:
         return {"error": "topic is required"}
 
+    context_answers = body.get("context_answers", [])
+
     session = _get_session(request)
     access_token = session.get("access_token") if session else None
 
     async def event_stream():
-        async for event in debate.generate(topic, access_token=access_token):
+        async for event in debate.generate(
+            topic,
+            access_token=access_token,
+            context_answers=context_answers,
+        ):
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
