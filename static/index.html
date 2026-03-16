@@ -1638,7 +1638,7 @@ $('urlInput').addEventListener('keydown', (e) => {
 // Nav: SecondMe login — check session on load
 async function checkAuth() {
   try {
-    const resp = await fetch('/auth/me');
+    const resp = await fetch('/api/auth/me');
     const data = await resp.json();
     if (data.logged_in) {
       $('secondmeBar').innerHTML = `
@@ -1651,7 +1651,7 @@ async function checkAuth() {
 checkAuth();
 
 $('secondmeLogin').addEventListener('click', () => {
-  window.location.href = '/auth/login';
+  window.location.href = '/api/auth/login';
 });
 
 // Courtroom: click to advance

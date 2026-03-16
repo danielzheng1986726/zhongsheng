@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer
 
 from services import secondme
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 SECRET_KEY = os.getenv("SECRET_KEY", "zhongsheng-dev-secret-change-me")
 COOKIE_NAME = "zs_session"
@@ -46,7 +46,7 @@ def _get_session(request: Request) -> dict | None:
 @router.get("/login")
 async def login(request: Request):
     """Redirect to Second Me OAuth authorization page."""
-    redirect_uri = f"{_base_url(request)}/auth/callback"
+    redirect_uri = f"{_base_url(request)}/api/auth/callback"
     params = urlencode({
         "client_id": SECONDME_CLIENT_ID,
         "redirect_uri": redirect_uri,
@@ -62,7 +62,7 @@ async def callback(request: Request, code: str = ""):
     if not code:
         return RedirectResponse("/?error=no_code")
 
-    redirect_uri = f"{_base_url(request)}/auth/callback"
+    redirect_uri = f"{_base_url(request)}/api/auth/callback"
     try:
         token_data = await secondme.exchange_code(code, redirect_uri)
         access_token = token_data["access_token"]
