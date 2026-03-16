@@ -81,7 +81,10 @@ async def callback(request: Request, code: str = ""):
         _set_session(response, session)
         return response
     except Exception as e:
-        return RedirectResponse(f"/?error=auth_failed&detail={e}")
+        import logging
+        logging.getLogger("auth").exception("OAuth callback failed")
+        from urllib.parse import quote
+        return RedirectResponse(f"/?error=auth_failed&detail={quote(str(e))}")
 
 
 @router.get("/logout")

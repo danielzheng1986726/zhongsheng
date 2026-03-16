@@ -5,7 +5,7 @@ import json
 
 import httpx
 
-API_BASE = "https://www.ai-builders.com/backend"
+API_BASE = os.getenv("AI_BUILDER_API_BASE", "https://space.ai-builders.com/backend")
 
 
 def _token():

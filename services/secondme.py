@@ -12,6 +12,8 @@ CLIENT_SECRET = os.getenv("SECONDME_CLIENT_SECRET", "")
 
 async def exchange_code(code: str, redirect_uri: str) -> dict:
     """Exchange authorization code for access + refresh tokens."""
+    import logging
+    log = logging.getLogger("secondme")
     async with httpx.AsyncClient(timeout=15) as c:
         r = await c.post(
             f"{BASE}/api/oauth/token/code",
@@ -26,9 +28,16 @@ async def exchange_code(code: str, redirect_uri: str) -> dict:
         )
         r.raise_for_status()
         body = r.json()
+        log.warning(f"SecondMe token response: {json.dumps(body, ensure_ascii=False)[:500]}")
         if body.get("code") != 0:
             raise ValueError(f"SecondMe token error: {body}")
-        return body["data"]
+        data = body.get("data", body)
+        # Handle both "access_token" and "accessToken" key formats
+        if "access_token" not in data and "accessToken" in data:
+            data["access_token"] = data["accessToken"]
+        if "refresh_token" not in data and "refreshToken" in data:
+            data["refresh_token"] = data["refreshToken"]
+        return data
 
 
 async def refresh_token(rt: str) -> dict:
