@@ -1,0 +1,11 @@
+.env
+.git
+.gitignore
+__pycache__
+*.pyc
+.DS_Store
+.claude
+zhihu_cache
+node_modules
+*.md
+promo/

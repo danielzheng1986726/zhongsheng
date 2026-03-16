@@ -1,0 +1,105 @@
+"""Second Me OAuth2 routes — login, callback, logout, me."""
+
+import os
+from urllib.parse import urlencode
+
+from fastapi import APIRouter, Request, Response
+from fastapi.responses import RedirectResponse
+from itsdangerous import URLSafeTimedSerializer
+
+from services import secondme
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+SECRET_KEY = os.getenv("SECRET_KEY", "zhongsheng-dev-secret-change-me")
+COOKIE_NAME = "zs_session"
+MAX_AGE = 7 * 24 * 3600  # 7 days
+
+_signer = URLSafeTimedSerializer(SECRET_KEY)
+
+SECONDME_CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "")
+OAUTH_BASE = "https://go.second.me/oauth/"
+
+
+def _base_url(request: Request) -> str:
+    return os.getenv("BASE_URL", str(request.base_url).rstrip("/"))
+
+
+def _set_session(response: Response, data: dict):
+    token = _signer.dumps(data)
+    response.set_cookie(
+        COOKIE_NAME, token, max_age=MAX_AGE,
+        httponly=True, samesite="lax",
+    )
+
+
+def _get_session(request: Request) -> dict | None:
+    cookie = request.cookies.get(COOKIE_NAME)
+    if not cookie:
+        return None
+    try:
+        return _signer.loads(cookie, max_age=MAX_AGE)
+    except Exception:
+        return None
+
+
+@router.get("/login")
+async def login(request: Request):
+    """Redirect to Second Me OAuth authorization page."""
+    redirect_uri = f"{_base_url(request)}/auth/callback"
+    params = urlencode({
+        "client_id": SECONDME_CLIENT_ID,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "user_info,chat,act,memory",
+    })
+    return RedirectResponse(f"{OAUTH_BASE}?{params}")
+
+
+@router.get("/callback")
+async def callback(request: Request, code: str = ""):
+    """Handle OAuth callback — exchange code for tokens, set session cookie."""
+    if not code:
+        return RedirectResponse("/?error=no_code")
+
+    redirect_uri = f"{_base_url(request)}/auth/callback"
+    try:
+        token_data = await secondme.exchange_code(code, redirect_uri)
+        access_token = token_data["access_token"]
+        refresh_token = token_data.get("refresh_token", "")
+
+        user_info = await secondme.get_user_info(access_token)
+
+        session = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_name": user_info.get("name", "用户"),
+            "user_avatar": user_info.get("avatar", ""),
+        }
+
+        response = RedirectResponse("/")
+        _set_session(response, session)
+        return response
+    except Exception as e:
+        return RedirectResponse(f"/?error=auth_failed&detail={e}")
+
+
+@router.get("/logout")
+async def logout():
+    """Clear session cookie and redirect home."""
+    response = RedirectResponse("/")
+    response.delete_cookie(COOKIE_NAME)
+    return response
+
+
+@router.get("/me")
+async def me(request: Request):
+    """Return current user info or logged-out status."""
+    session = _get_session(request)
+    if not session:
+        return {"logged_in": False}
+    return {
+        "logged_in": True,
+        "name": session.get("user_name", ""),
+        "avatar": session.get("user_avatar", ""),
+    }

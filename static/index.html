@@ -1051,7 +1051,7 @@
 
   <!-- 刘看山 guide -->
   <div class="kanshan-guide">
-    <div class="kanshan-avatar">🐻‍❄️</div>
+    <div class="kanshan-avatar"><img src="/img/kanshan-front.png" alt="刘看山" style="width:56px;height:auto;filter:drop-shadow(0 0 8px rgba(230,0,46,0.3))"></div>
     <div class="kanshan-bubble">
       <div class="kanshan-name">刘看山 · 审判长</div>
       欢迎来到众声法庭。这里没有输赢，只有<em>被看见的真相</em>。<br>
@@ -1061,7 +1061,7 @@
 
   <!-- URL input -->
   <div class="url-input-area">
-    <input class="url-input" id="urlInput" type="text" placeholder="粘贴知乎讨论链接，如 zhihu.com/question/..." />
+    <input class="url-input" id="urlInput" type="text" placeholder="输入任意讨论话题，如「年轻人该不该躺平」" />
     <button class="url-submit" id="urlSubmit">分析</button>
   </div>
 
@@ -1072,66 +1072,20 @@
       <span class="api-tag">知乎热榜 API</span>
     </div>
 
-    <div class="case-card" data-case="tangping" id="caseTangping">
-      <div class="case-rank top">1</div>
-      <div class="case-question">年轻人到底该不该躺平？</div>
-      <div class="case-meta">
-        <span>354 条回答</span>
-        <span>·</span>
-        <span>5 大阵营</span>
-        <span>·</span>
-        <span class="case-heat">🔥 1.2 万热度</span>
-      </div>
-    </div>
-
-    <div class="case-card" data-case="locked" id="caseAI">
-      <div class="case-rank top">2</div>
-      <div class="case-question">AI 会不会取代大部分白领工作？</div>
-      <div class="case-meta">
-        <span>891 条回答</span>
-        <span>·</span>
-        <span>4 大阵营</span>
-        <span>·</span>
-        <span class="case-heat">🔥 9.8 千热度</span>
-      </div>
-    </div>
-
-    <div class="case-card" data-case="locked" id="caseLove">
-      <div class="case-rank normal">3</div>
-      <div class="case-question">为什么这届年轻人不想谈恋爱了？</div>
-      <div class="case-meta">
-        <span>267 条回答</span>
-        <span>·</span>
-        <span>3 大阵营</span>
-        <span>·</span>
-        <span class="case-heat">🔥 7.3 千热度</span>
-      </div>
-    </div>
-
-    <div class="case-card" data-case="locked" id="caseEducation">
-      <div class="case-rank normal">4</div>
-      <div class="case-question">「考研」还是「直接工作」，怎么选？</div>
-      <div class="case-meta">
-        <span>512 条回答</span>
-        <span>·</span>
-        <span>4 大阵营</span>
-        <span>·</span>
-        <span class="case-heat">🔥 5.6 千热度</span>
-      </div>
-    </div>
+    <div id="caseList"><!-- dynamic from /api/hotlist --></div>
   </div>
 
   <!-- SecondMe bar -->
   <div class="secondme-bar" id="secondmeBar">
     <div class="secondme-icon">🤖</div>
-    <div class="secondme-text">连接 <em>Second Me</em> 获取个性化解读</div>
+    <div class="secondme-text" id="secondmeText">连接 <em>Second Me</em> 获取个性化解读</div>
     <button class="secondme-btn" id="secondmeLogin">授权登录</button>
   </div>
 </div>
 
 <!-- ============ Loading Page ============ -->
 <div class="loading-page" id="loadingPage">
-  <div class="loading-kanshan">🐻‍❄️</div>
+  <div class="loading-kanshan"><img src="/img/kanshan-front.png" alt="刘看山" style="width:80px;height:auto"></div>
   <div class="loading-case-title" id="loadingTitle">「年轻人到底该不该躺平？」</div>
 
   <div class="loading-steps" id="loadingSteps">
@@ -1204,7 +1158,7 @@
   </div>
 
   <div class="gavel-overlay" id="gavelOverlay">
-    <img class="gavel-emoji" src="img/gavel.png" alt="法槌">
+    <img class="gavel-emoji" src="/img/gavel.png" alt="法槌">
   </div>
 
   <div class="vs-splash" id="vsSplash">
@@ -1216,32 +1170,14 @@
 <!-- ============ Results Card ============ -->
 <div class="consensus-card" id="consensusCard">
   <h2>— 隐 藏 共 识 —</h2>
-  <div class="consensus-items">
-    <div class="consensus-item">
-      <div class="pct">100%</div>
-      <div class="label">所有阵营都认为<br>当前竞争压力不可持续</div>
-    </div>
-    <div class="consensus-item">
-      <div class="pct">92%</div>
-      <div class="label">连「躺平派」也不反对努力<br>只反对被迫内卷</div>
-    </div>
-    <div class="consensus-item">
-      <div class="pct">88%</div>
-      <div class="label">各阵营都在追求<br>「自己定义的好生活」</div>
-    </div>
-  </div>
+  <div class="consensus-items" id="consensusItems"><!-- dynamic --></div>
 
   <div class="golden-quote">
-    <p>他们以为自己在反对彼此，<br>其实在反对同一堵墙。</p>
+    <p id="goldenQuoteText"></p>
     <div class="quote-label">— 众声 · 本场辩论金句 —</div>
   </div>
 
-  <div class="warmth-msg">
-    这场 354 条回答的讨论里，人们以为自己在吵架。<br>
-    但 Agent 对话发现，<em>他们在 80% 的事情上完全一致</em>。<br>
-    真正的分歧，只有一条线。<br>
-    而那条线的两边，站着的是同一种渴望。
-  </div>
+  <div class="warmth-msg" id="warmthMsg"></div>
 
   <div class="action-buttons">
     <button class="action-btn" id="btnPoster">
@@ -1274,106 +1210,13 @@
 </div>
 
 <script>
-// ============ Character Definitions ============
-const CHARS = {
-  lying: {
-    name: '躺平派', cls: 'char-lying', color: '#e8785a', emoji: '🛋️',
-    title: '「卷什么卷，不如躺着」', catchphrase: '葛优瘫 · 佛系青年 · 精神离职',
-    angry_emoji: '😤', shock_emoji: '😳', think_emoji: '🤔', moved_emoji: '🥺'
-  },
-  hustle: {
-    name: '奋斗派', cls: 'char-hustle', color: '#5a9ae8', emoji: '💪',
-    title: '「机会只留给有准备的人」', catchphrase: '鸡汤达人 · 早起打卡 · 996福报',
-    angry_emoji: '😡', shock_emoji: '😲', think_emoji: '🧐', point_emoji: '👉'
-  },
-  selective: {
-    name: '选择派', cls: 'char-selective', color: '#a078e0', emoji: '⚖️',
-    title: '「该卷卷，该躺躺」', catchphrase: '精力管理大师 · 整顿职场',
-    angry_emoji: '😤', shock_emoji: '😱', think_emoji: '🤨', moved_emoji: '😌'
-  },
-  reform: {
-    name: '改革派', cls: 'char-reform', color: '#50c0a0', emoji: '🔧',
-    title: '「别讨论躺不躺，讨论怎么改」', catchphrase: '制度分析师 · 结构性吐槽',
-    angry_emoji: '🤬', shock_emoji: '😮', think_emoji: '🤔', point_emoji: '☝️'
-  },
-  kanshan: {
-    name: '刘看山', cls: 'char-kanshan', color: '#4ecde6', emoji: '🐻‍❄️',
-    title: '「我只看事实」', catchphrase: '众声法庭 · 审判长',
-    think_emoji: '🔍'
-  }
-};
-
-// ============ Script — Chinese localized, mixed tone ============
-const SCRIPT = [
-  { type: 'narrate', speaker: 'kanshan', text: '载入知乎讨论「年轻人到底该不该躺平」…… 354 条回答已通过知乎可信搜获取完毕。' },
-  { type: 'narrate', speaker: 'kanshan', text: '识别到 5 个核心观点阵营。观点 Agent 已就位。现在，开庭。' },
-
-  // === Act 1: 躺平 vs 奋斗 — 嘴炮 ===
-  { type: 'vs', left: 'lying', right: 'hustle' },
-
-  { type: 'say', side: 'left', char: 'lying', expr: 'default',
-    text: '各位好，我是躺平派代表。今天我的论点很简单——房价是年收入 30 倍的城市里，「努力就能成功」这句话，属于诈骗。', effect: 'none' },
-
-  { type: 'say', side: 'right', char: 'hustle', expr: 'angry',
-    text: '你这开场就扣帽子是吧？照你这逻辑，每天发「早安打工人」的都是受害者咯？', effect: 'anger' },
-
-  { type: 'say', side: 'left', char: 'lying', expr: 'default',
-    text: '不不不，你们发早安打工人的，那叫斯德哥尔摩综合症，谢谢。', effect: 'none' },
-
-  { type: 'say', side: 'right', char: 'hustle', expr: 'angry',
-    text: '好好好，开始人身攻击了是吧？？', effect: 'anger' },
-
-  // 转折
-  { type: 'objection', text: '等一下！', style: 'holdit' },
-
-  { type: 'say', side: 'right', char: 'hustle', expr: 'think',
-    text: '我突然注意到——你说的是「系统回报率低」，不是「努力没用」。这是两件完全不同的事。', effect: 'none' },
-
-  { type: 'say', side: 'left', char: 'lying', expr: 'shock',
-    text: '……', effect: 'sweat' },
-
-  // 正经辩论
-  { type: 'say', side: 'right', char: 'hustle', expr: 'think',
-    text: '我认真问你：你反对的到底是「努力」这件事本身，还是「被迫的、没有选择的努力」？', effect: 'none' },
-
-  { type: 'say', side: 'left', char: 'lying', expr: 'think',
-    text: '……是被迫。如果是自己选的方向，我其实从来不排斥付出。', effect: 'none' },
-
-  // 共识
-  { type: 'objection', text: '共识达成！', style: 'consensus' },
-
-  { type: 'say', side: 'left', char: 'kanshan', expr: 'default',
-    text: '记录第一项共识：双方争论的核心不是「该不该努力」——而是「努力的自主权应不应该属于个人」。', effect: 'spark' },
-
-  // === Act 2: 选择派 vs 改革派 ===
-  { type: 'vs', left: 'selective', right: 'reform' },
-
-  { type: 'say', side: 'left', char: 'selective', expr: 'default',
-    text: '我的策略很简单嘛：我在乎的事拼命干，不在乎的事直接躺，有什么问题？', effect: 'none' },
-
-  { type: 'say', side: 'right', char: 'reform', expr: 'think',
-    text: '问题是——你有没有想过，为什么你需要做这个取舍？如果系统合理，你根本不用「选择性」躺平。', effect: 'none' },
-
-  { type: 'say', side: 'left', char: 'selective', expr: 'shock',
-    text: '……等下，你说得好像有道理。我以为我在做自由选择，实际上是在有限资源下做生存策略？', effect: 'sweat' },
-
-  // 异议
-  { type: 'objection', text: '我反对！', style: 'objection' },
-
-  { type: 'say', side: 'right', char: 'reform', expr: 'point',
-    text: '所以真正的问题从来就不是「躺不躺」——而是：个人行动，到底能不能改变系统？', effect: 'spark' },
-
-  // === 真相揭示 ===
-  { type: 'narrate', speaker: 'kanshan', text: '整场 354 条讨论，真正的分歧线只有一条——' },
-
-  { type: 'narrate', speaker: 'kanshan', text: '「相信个人能改变系统」vs「认为系统只能被结构性力量改变」。其他所有争论，都是这条线的投影。' },
-
-  { type: 'objection', text: '真相大白！', style: 'consensus' },
-
-  { type: 'narrate', speaker: 'kanshan', text: '354 条回答，12 位讨论者，看似水火不容。但 Agent 对话发现——他们在 80% 的事情上，完全一致。' },
-
-  { type: 'consensus' }
-];
+// ============ Dynamic Data (populated from API) ============
+let CHARS = {};
+let SCRIPT = [];
+let debateTopic = '';
+let consensusData = [];
+let goldenQuote = '';
+let warmthMessage = '';
 
 // ============ Engine ============
 let currentStep = 0;
@@ -1429,32 +1272,106 @@ $('soundToggle').addEventListener('click', (e) => {
   $('soundToggle').classList.toggle('muted', !soundEnabled);
 });
 
-// --- Loading sequence ---
-async function startLoading(caseTitle) {
-  $('loadingTitle').textContent = `「${caseTitle}」`;
+// --- Loading sequence (SSE-powered) ---
+async function startLoading(topic) {
+  debateTopic = topic;
+  $('loadingTitle').textContent = `「${topic}」`;
   $('navPage').classList.add('hidden');
   $('loadingPage').classList.add('active');
 
   const steps = ['step1','step2','step3','step4','step5'];
   const bar = $('loadingBarFill');
-  const durations = [1200, 1400, 1000, 800, 600];
-  let progress = 0;
+  const phaseMap = { fetching: 0, analyzing: 1, factions: 2, secondme: 3, scripting: 3, ready: 4 };
 
-  for (let i = 0; i < steps.length; i++) {
-    const el = $(steps[i]);
-    el.classList.add('active');
-    progress += (100 / steps.length);
-    bar.style.width = progress + '%';
-    await sleep(durations[i]);
-    el.classList.remove('active');
-    el.classList.add('done');
+  // Reset loading steps
+  steps.forEach(id => { const el = $(id); el.classList.remove('active', 'done'); });
+  bar.style.width = '0%';
+
+  try {
+    const resp = await fetch('/api/debate/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic }),
+    });
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const event = JSON.parse(line.slice(6));
+
+        if (event.phase === 'done') {
+          // Apply data
+          SCRIPT = event.script;
+          CHARS = event.chars;
+          consensusData = event.consensus_items || [];
+          goldenQuote = event.golden_quote || '';
+          warmthMessage = event.warmth_message || '';
+
+          // Fill consensus card
+          renderConsensus();
+
+          // Mark all steps done
+          steps.forEach(id => { $(id).classList.remove('active'); $(id).classList.add('done'); });
+          bar.style.width = '100%';
+
+          await sleep(400);
+          $('loadingPage').classList.remove('active');
+          initProgress();
+          currentStep = 0;
+          executeStep(0);
+          return;
+        }
+
+        // Progress update
+        const idx = phaseMap[event.phase];
+        if (idx !== undefined) {
+          for (let i = 0; i < idx; i++) {
+            $(steps[i]).classList.remove('active');
+            $(steps[i]).classList.add('done');
+          }
+          $(steps[idx]).classList.add('active');
+          bar.style.width = ((idx + 1) / steps.length * 100) + '%';
+        }
+
+        // Update step text with real message
+        if (event.message && idx !== undefined) {
+          const stepEl = $(steps[idx]);
+          const span = stepEl.querySelector('span:first-of-type');
+          if (span) span.textContent = event.message;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Debate generation failed:', err);
+    showToast('❌', '生成失败', '请稍后重试');
+    $('loadingPage').classList.remove('active');
+    $('navPage').classList.remove('hidden');
   }
+}
 
-  await sleep(400);
-  $('loadingPage').classList.remove('active');
-  initProgress();
-  currentStep = 0;
-  executeStep(0);
+function renderConsensus() {
+  // Consensus items
+  const itemsEl = $('consensusItems');
+  itemsEl.innerHTML = consensusData.map(c => `
+    <div class="consensus-item">
+      <div class="pct">${c.pct}</div>
+      <div class="label">${c.label}<br>${c.detail || ''}</div>
+    </div>
+  `).join('');
+
+  // Golden quote
+  $('goldenQuoteText').textContent = goldenQuote;
+
+  // Warmth message
+  $('warmthMsg').innerHTML = warmthMessage;
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1483,7 +1400,11 @@ function updateProgress(step) {
 function setChar(side, charId, expr) {
   const el = $(side === 'left' ? 'charLeft' : 'charRight');
   const char = CHARS[charId];
-  el.className = `character ${side} ${char.cls}`;
+  if (!char) return;
+  el.className = `character ${side} ${char.cls || ''}`;
+  // Dynamic color support for server-generated characters
+  const card = $(side === 'left' ? 'charLeftCard' : 'charRightCard');
+  if (char.color) card.style.borderColor = char.color;
 
   const emojiEl = $(side === 'left' ? 'charLeftEmoji' : 'charRightEmoji');
   let emoji = char.emoji;
@@ -1596,7 +1517,7 @@ function showVS(leftId, rightId) {
   return new Promise(resolve => {
     const splash = $('vsSplash');
     const names = $('vsNames');
-    const L = CHARS[leftId], R = CHARS[rightId];
+    const L = CHARS[leftId] || {emoji:'?',name:'?',color:'#999'}, R = CHARS[rightId] || {emoji:'?',name:'?',color:'#999'};
     names.innerHTML = `
       <div class="vs-side"><div class="vs-emoji">${L.emoji}</div><div class="vs-name" style="color:${L.color}">${L.name}</div></div>
       <div class="vs-side"><div class="vs-emoji">${R.emoji}</div><div class="vs-name" style="color:${R.color}">${R.name}</div></div>
@@ -1665,36 +1586,72 @@ function showToast(icon, text, sub, duration = 2000) {
 
 // ============ Event Listeners ============
 
-// Nav: case cards
-document.querySelectorAll('.case-card').forEach(card => {
-  card.addEventListener('click', () => {
-    if (card.dataset.case === 'locked') {
-      showToast('🔒', '更多案件开庭中，敬请期待', 'Demo 版本仅展示第一个案件');
-      return;
-    }
-    startLoading('年轻人到底该不该躺平？');
-  });
-});
+// Nav: dynamic hotlist loading
+async function loadHotlist() {
+  const list = $('caseList');
+  try {
+    const resp = await fetch('/api/hotlist');
+    const data = await resp.json();
+    const items = data.items || [];
+    list.innerHTML = items.map((item, i) => {
+      const title = item.title || '';
+      const info = item.interaction_info || {};
+      const answers = info.comment_count || item.answer_count || '';
+      const heat = item.heat_score ? (item.heat_score > 10000 ? (item.heat_score/10000).toFixed(1)+'万' : item.heat_score) : (item.heat || '');
+      return `
+      <div class="case-card" data-topic="${title.replace(/"/g, '&quot;')}">
+        <div class="case-rank ${i < 2 ? 'top' : 'normal'}">${i + 1}</div>
+        <div class="case-question">${title}</div>
+        <div class="case-meta">
+          ${answers ? '<span>'+answers+' 条讨论</span>' : ''}
+          ${heat ? '<span>·</span><span class="case-heat">🔥 '+heat+' 热度</span>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div style="color:#666;text-align:center;padding:20px">加载热榜失败，请输入话题</div>';
+  }
 
-// Nav: URL submit
+  // Bind click events on dynamic cards
+  list.querySelectorAll('.case-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const topic = card.dataset.topic;
+      if (topic) startLoading(topic);
+    });
+  });
+}
+loadHotlist();
+
+// Nav: URL/topic submit — supports free text topics
 $('urlSubmit').addEventListener('click', () => {
-  const url = $('urlInput').value.trim();
-  if (!url) {
-    showToast('💡', '请粘贴一个知乎讨论链接', '');
+  const input = $('urlInput').value.trim();
+  if (!input) {
+    showToast('💡', '请输入一个讨论话题', '');
     return;
   }
-  showToast('🔒', 'Demo 版本暂不支持自定义链接', '正式版将支持任意知乎讨论');
+  startLoading(input);
+});
+$('urlInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('urlSubmit').click();
 });
 
-// Nav: SecondMe login
+// Nav: SecondMe login — check session on load
+async function checkAuth() {
+  try {
+    const resp = await fetch('/auth/me');
+    const data = await resp.json();
+    if (data.logged_in) {
+      $('secondmeBar').innerHTML = `
+        <div class="secondme-icon">🤖</div>
+        <div class="secondme-text">已连接 <em>Second Me</em> · ${data.name} · 个性化解读已开启</div>
+      `;
+    }
+  } catch (e) {}
+}
+checkAuth();
+
 $('secondmeLogin').addEventListener('click', () => {
-  showToast('🤖', 'Second Me OAuth 授权登录', '模拟：将跳转至 go.second.me/oauth', 2500);
-  setTimeout(() => {
-    $('secondmeBar').innerHTML = `
-      <div class="secondme-icon">🤖</div>
-      <div class="secondme-text">已连接 <em>Second Me</em> · 个性化解读已开启</div>
-    `;
-  }, 2500);
+  window.location.href = '/auth/login';
 });
 
 // Courtroom: click to advance
@@ -1732,20 +1689,52 @@ $('btnPoster').addEventListener('click', (e) => {
 });
 $('btnQuote').addEventListener('click', (e) => {
   e.stopPropagation();
-  const quote = '他们以为自己在反对彼此，其实在反对同一堵墙。 —— 众声 Voices';
+  const quote = goldenQuote ? `${goldenQuote} —— 众声 Voices` : '众声 Voices';
   navigator.clipboard.writeText(quote).then(() => {
-    showToast('✍️', '金句已复制到剪贴板', '「他们以为自己在反对彼此，其实在反对同一堵墙。」');
+    showToast('✍️', '金句已复制到剪贴板', goldenQuote);
   }).catch(() => {
-    showToast('✍️', '复制失败，请手动复制', '「他们以为自己在反对彼此，其实在反对同一堵墙。」');
+    showToast('✍️', '复制失败，请手动复制', goldenQuote);
   });
 });
-$('btnCircle').addEventListener('click', (e) => {
+$('btnCircle').addEventListener('click', async (e) => {
   e.stopPropagation();
-  showToast('💬', '已发布到「A2A for Reconnect」圈子', '模拟调用知乎圈子 API', 2500);
+  const content = `【众声法庭】关于「${debateTopic}」的辩论结束了！\n\n💡 金句：${goldenQuote}\n\n${warmthMessage.replace(/<[^>]+>/g, '')}\n\n来众声法庭，看看你关心的话题背后藏着什么共识 👉`;
+  try {
+    const resp = await fetch('/api/zhihu/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast('💬', '已发布到知乎圈子', '辩论结果已同步到社区', 2500);
+    } else {
+      showToast('⚠️', '发布失败', data.error || '请稍后重试', 2500);
+    }
+  } catch (err) {
+    showToast('❌', '发布失败', '网络错误', 2500);
+  }
 });
-$('btnMemory').addEventListener('click', (e) => {
+$('btnMemory').addEventListener('click', async (e) => {
   e.stopPropagation();
-  showToast('🧠', '辩论分析已写入 Second Me 记忆', '模拟调用 /agent_memory/ingest API', 2500);
+  try {
+    const resp = await fetch('/api/secondme/memory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic: debateTopic,
+        summary: `关于「${debateTopic}」的众声法庭辩论：${goldenQuote}`,
+      }),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast('🧠', '辩论分析已写入 Second Me 记忆', '可在 Second Me 中回顾', 2500);
+    } else {
+      showToast('🔒', data.error === 'not logged in' ? '请先登录 Second Me' : '写入失败', '', 2500);
+    }
+  } catch (err) {
+    showToast('❌', '写入失败', '请稍后重试', 2500);
+  }
 });
 
 // Results: restart
@@ -1759,7 +1748,11 @@ $('restartBtn').addEventListener('click', (e) => {
 });
 $('nextCaseBtn').addEventListener('click', (e) => {
   e.stopPropagation();
-  showToast('🔒', '更多案件开庭中，敬请期待', 'Demo 版本仅展示第一个案件');
+  $('consensusCard').classList.remove('active');
+  $('navPage').classList.remove('hidden');
+  currentStep = 0;
+  hideChar('left');
+  hideChar('right');
 });
 </script>
 
