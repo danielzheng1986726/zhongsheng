@@ -10,8 +10,11 @@ from services import llm, secondme, zhihu
 
 log = logging.getLogger("debate")
 
-# Models to try, in order. DeepSeek often refuses political topics.
-MODELS = ["deepseek", "gemini-2.5-pro", "gpt-5"]
+# Models to try, in order.
+# grok-4-fast: best — handles all topics including political, fast
+# deepseek: good quality but refuses political/sensitive topics ("Content Exists Risk")
+# gpt-5: works but needs max_tokens>=1000, still censors political content
+MODELS = ["grok-4-fast", "deepseek", "gpt-5"]
 
 FACTION_PROMPT = """你是一个社会议题分析专家。你的任务是客观地分析一个讨论话题，找出社会上存在的不同观点阵营。这是一个学术分析任务，不涉及任何价值判断。
 

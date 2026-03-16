@@ -2,10 +2,16 @@
 
 import os
 import json
+import logging
 
 import httpx
 
+log = logging.getLogger("llm")
+
 API_BASE = os.getenv("AI_BUILDER_API_BASE", "https://space.ai-builders.com/backend")
+
+# gpt-5 requires max_tokens >= 1000 on AI Builder platform
+GPT5_MIN_TOKENS = 1000
 
 
 def _token():
@@ -14,11 +20,15 @@ def _token():
 
 async def chat(
     messages: list[dict],
-    model: str = "deepseek",
+    model: str = "grok-4-fast",
     temperature: float = 0.7,
     max_tokens: int = 4096,
 ) -> str:
     """Non-streaming chat completion. Returns assistant content."""
+    # gpt-5 needs max_tokens >= 1000 or returns empty content
+    if model.startswith("gpt-") and max_tokens < GPT5_MIN_TOKENS:
+        max_tokens = GPT5_MIN_TOKENS
+
     async with httpx.AsyncClient(timeout=120) as c:
         r = await c.post(
             f"{API_BASE}/v1/chat/completions",
@@ -32,12 +42,15 @@ async def chat(
         )
         r.raise_for_status()
         data = r.json()
-        return data["choices"][0]["message"]["content"]
+        content = data["choices"][0]["message"]["content"]
+        if not content or not content.strip():
+            raise ValueError(f"Model {model} returned empty content")
+        return content
 
 
 async def chat_json(
     messages: list[dict],
-    model: str = "deepseek",
+    model: str = "grok-4-fast",
     temperature: float = 0.3,
     max_tokens: int = 4096,
 ) -> dict | list:
