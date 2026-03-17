@@ -150,56 +150,109 @@
   }
   .url-submit:hover { transform: skewX(-4deg) scale(1.03); }
 
-  /* Hot list */
-  /* Feed section */
-  .feed-section {
+  /* ---- 正在上演 (Theater section) ---- */
+  .theater-section {
     max-width: 600px;
     margin: 0 auto;
-    padding: 0 20px 20px;
+    padding: 0 20px 24px;
     position: relative;
     z-index: 1;
   }
-  .feed-section.hidden { display: none; }
-  .feed-title {
+  .theater-title {
     display: flex; align-items: center; gap: 8px;
-    font-size: 13px; color: #555; letter-spacing: 3px;
-    margin-bottom: 10px; padding-left: 4px; transform: skewX(-2deg);
+    font-size: 14px; color: #888; letter-spacing: 3px;
+    margin-bottom: 12px; padding-left: 4px; transform: skewX(-2deg);
+    font-weight: 700;
   }
-  .feed-counter {
+  .theater-title .theater-icon { font-size: 16px; }
+  .theater-counter {
     font-size: 11px; color: rgba(230,0,46,0.6); margin-left: auto;
     letter-spacing: 0; transform: skewX(2deg);
   }
-  .feed-scroll {
+  .theater-scroll {
     display: flex; gap: 12px; overflow-x: auto;
     padding-bottom: 8px; scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
-  .feed-scroll::-webkit-scrollbar { display: none; }
-  .feed-card {
-    min-width: 240px; max-width: 260px;
+  .theater-scroll::-webkit-scrollbar { display: none; }
+  .theater-card {
+    min-width: 260px; max-width: 280px;
     scroll-snap-align: start;
     background: #0f0f0f; border: 1px solid #1a1a1a;
-    border-radius: 4px; padding: 14px 16px;
+    border-radius: 4px; padding: 16px 18px;
     cursor: pointer; transition: border-color 0.2s, transform 0.2s;
-    flex-shrink: 0;
+    flex-shrink: 0; position: relative;
+    overflow: hidden;
   }
-  .feed-card:hover { border-color: #e6002e; transform: translateY(-2px); }
-  .feed-card .feed-topic {
-    font-size: 13px; font-weight: 700; color: #eee;
-    line-height: 1.4; margin-bottom: 8px;
+  .theater-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #e6002e, #f8d56e);
+  }
+  .theater-card:hover { border-color: #e6002e; transform: translateY(-2px); }
+  .theater-card .tc-topic {
+    font-size: 14px; font-weight: 700; color: #eee;
+    line-height: 1.5; margin-bottom: 10px;
     overflow: hidden; display: -webkit-box;
     -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   }
-  .feed-card .feed-quote {
-    font-size: 11px; color: #f8d56e; line-height: 1.4;
-    margin-bottom: 8px;
+  .theater-card .tc-quote {
+    font-size: 12px; color: #f8d56e; line-height: 1.5;
+    margin-bottom: 10px; padding-left: 10px;
+    border-left: 2px solid rgba(248,213,110,0.3);
     overflow: hidden; display: -webkit-box;
     -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   }
-  .feed-card .feed-meta {
-    font-size: 10px; color: #444;
+  .theater-card .tc-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; color: #555;
   }
+  .theater-card .tc-cta {
+    font-size: 10px; color: #e6002e; font-weight: 700; letter-spacing: 1px;
+  }
+  /* Empty state */
+  .theater-empty {
+    text-align: center; padding: 24px 16px;
+    background: #0f0f0f; border: 1px dashed #1a1a1a; border-radius: 4px;
+  }
+  .theater-empty .te-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.5; }
+  .theater-empty .te-text { font-size: 13px; color: #444; line-height: 1.6; }
+  .theater-empty .te-hint { font-size: 11px; color: #e6002e; margin-top: 8px; }
+
+  /* ---- 旁听席 (Auditorium section) ---- */
+  .auditorium-section {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .auditorium-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: #888; letter-spacing: 3px;
+    margin-bottom: 12px; padding-left: 4px; transform: skewX(-2deg);
+    font-weight: 700;
+  }
+  .auditorium-title .aud-badge {
+    font-size: 10px; background: rgba(80,224,176,0.15); color: #50e0b0;
+    padding: 2px 8px; border-radius: 2px; letter-spacing: 1px;
+    transform: skewX(2deg);
+  }
+  .auditorium-placeholder {
+    background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px;
+    padding: 20px; text-align: center;
+  }
+  .auditorium-placeholder .ap-text {
+    font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 12px;
+  }
+  .auditorium-placeholder .ap-text em { color: #50e0b0; font-style: normal; font-weight: 700; }
+  .auditorium-placeholder .ap-btn {
+    display: inline-block; background: rgba(80,224,176,0.1);
+    border: 1px solid rgba(80,224,176,0.3); color: #50e0b0;
+    padding: 8px 20px; border-radius: 2px; font-size: 12px;
+    font-weight: 700; cursor: pointer; transition: background 0.2s;
+  }
+  .auditorium-placeholder .ap-btn:hover { background: rgba(80,224,176,0.2); }
 
   .hot-section {
     max-width: 600px;
@@ -1195,23 +1248,41 @@
     <button class="url-submit" id="urlSubmit">分析</button>
   </div>
 
-  <!-- Feed: recent debates -->
-  <div class="feed-section hidden" id="feedSection">
-    <div class="feed-title">
-      📡 最近开庭
-      <span class="feed-counter" id="feedCounter"></span>
+  <!-- 🎭 正在上演 (Theater) -->
+  <div class="theater-section" id="theaterSection">
+    <div class="theater-title">
+      <span class="theater-icon">🎭</span> 正在上演
+      <span class="theater-counter" id="theaterCounter"></span>
     </div>
-    <div class="feed-scroll" id="feedScroll"><!-- dynamic from /api/feed --></div>
+    <div class="theater-scroll" id="theaterScroll">
+      <!-- Dynamic from /api/feed, or empty state -->
+      <div class="theater-empty" id="theaterEmpty">
+        <div class="te-icon">⚖️</div>
+        <div class="te-text">法庭今日尚未开庭</div>
+        <div class="te-hint">👇 选择一个热榜话题，开启第一场辩论</div>
+      </div>
+    </div>
   </div>
 
-  <!-- Hot list -->
+  <!-- 🔥 知乎热榜 -->
   <div class="hot-section">
     <div class="hot-title">
-      🔥 知乎热榜 · 今日争议
+      🔥 今日热榜
       <span class="api-tag">知乎热榜 API</span>
     </div>
-
     <div id="caseList"><!-- dynamic from /api/hotlist --></div>
+  </div>
+
+  <!-- 🧑‍⚖️ 旁听席 (Auditorium) -->
+  <div class="auditorium-section" id="auditoriumSection">
+    <div class="auditorium-title">
+      🧑‍⚖️ 旁听席
+      <span class="aud-badge">A2A</span>
+    </div>
+    <div class="auditorium-placeholder" id="auditoriumContent">
+      <div class="ap-text">你的 <em>Second Me</em> 分身如何看待这些争论？<br>登录后，分身将自动旁听每场辩论并发表看法。</div>
+      <div class="ap-btn" id="auditoriumLogin">连接 Second Me →</div>
+    </div>
   </div>
 
   <!-- SecondMe bar -->
@@ -1818,43 +1889,46 @@ async function loadHotlist() {
 loadHotlist();
 
 // Nav: load feed (recent debates from circle)
-async function loadFeed() {
+async function loadTheater() {
   try {
     const resp = await fetch('/api/feed');
     const data = await resp.json();
     const posts = data.posts || [];
-    if (!posts.length) return;
 
     // Parse circle posts for debate summaries
     const debatePosts = posts.filter(p => {
       const text = p.content || p.excerpt || '';
       return text.includes('众声法庭') || text.includes('金句');
     });
-    if (!debatePosts.length) return;
 
-    $('feedSection').classList.remove('hidden');
-    $('feedCounter').textContent = `${debatePosts.length} 场辩论`;
+    if (!debatePosts.length) {
+      // Show empty state (already in HTML)
+      $('theaterCounter').textContent = '';
+      return;
+    }
 
-    $('feedScroll').innerHTML = debatePosts.slice(0, 8).map(p => {
+    $('theaterCounter').textContent = `${debatePosts.length} 场辩论`;
+
+    $('theaterScroll').innerHTML = debatePosts.slice(0, 8).map(p => {
       const text = p.content || p.excerpt || '';
-      // Extract topic from 「...」
       const topicMatch = text.match(/「(.+?)」/);
       const topic = topicMatch ? topicMatch[1] : text.slice(0, 30);
-      // Extract quote from 💡 金句：...
       const quoteMatch = text.match(/💡\s*金句[：:]\s*(.+?)(?:\n|$)/);
       const quote = quoteMatch ? quoteMatch[1] : '';
-      const likes = p.reaction_count || p.like_count || 0;
-      const comments = p.comment_count || 0;
+      const time = p.created_time ? new Date(p.created_time * 1000).toLocaleDateString('zh-CN', {month:'short', day:'numeric'}) : '';
       return `
-        <div class="feed-card" data-topic="${topic.replace(/"/g, '&quot;')}">
-          <div class="feed-topic">${topic}</div>
-          ${quote ? `<div class="feed-quote">💡 ${quote}</div>` : ''}
-          <div class="feed-meta">${likes ? '❤ '+likes : ''} ${comments ? '💬 '+comments : ''}</div>
+        <div class="theater-card" data-topic="${topic.replace(/"/g, '&quot;')}">
+          <div class="tc-topic">${topic}</div>
+          ${quote ? `<div class="tc-quote">${quote}</div>` : ''}
+          <div class="tc-footer">
+            <span>${time}</span>
+            <span class="tc-cta">点击围观 →</span>
+          </div>
         </div>`;
     }).join('');
 
-    // Click feed card → start debate on that topic
-    $('feedScroll').querySelectorAll('.feed-card').forEach(card => {
+    // Click theater card → start debate on that topic
+    $('theaterScroll').querySelectorAll('.theater-card').forEach(card => {
       card.addEventListener('click', () => {
         const topic = card.dataset.topic;
         if (topic) {
@@ -1864,10 +1938,10 @@ async function loadFeed() {
       });
     });
   } catch (e) {
-    // Feed is optional, fail silently
+    // Theater feed is optional, fail silently
   }
 }
-loadFeed();
+loadTheater();
 
 // Nav: URL/topic submit — supports free text topics
 $('urlSubmit').addEventListener('click', () => {
@@ -1905,6 +1979,11 @@ async function checkAuth() {
 checkAuth();
 
 $('secondmeLogin').addEventListener('click', () => {
+  window.location.href = '/api/auth/login';
+});
+
+// Auditorium login button
+$('auditoriumLogin').addEventListener('click', () => {
   window.location.href = '/api/auth/login';
 });
 

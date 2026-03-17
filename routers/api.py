@@ -1,12 +1,16 @@
 """Business API routes — hotlist, debate generation, Second Me participation."""
 
+import asyncio
 import json
+import logging
 
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
 from services import zhihu, debate, secondme
 from routers.auth import _get_session
+
+log = logging.getLogger("api")
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -100,3 +104,45 @@ async def publish_to_circle(request: Request):
     if "error" in result:
         return {"ok": False, "error": result["error"]}
     return {"ok": True, "result": result}
+
+
+@router.post("/admin/seed")
+async def seed_debates(request: Request):
+    """Pre-generate debates for top hotlist items to fill the theater feed.
+
+    Body: {"count": 3} (optional, defaults to 3)
+    Fires debates in background and returns immediately.
+    """
+    body = await request.json() if request.headers.get("content-type") else {}
+    count = min(body.get("count", 3), 5)
+
+    items = await zhihu.get_hotlist()
+    if not items:
+        return {"error": "hotlist empty"}
+
+    # Pick top N items that have answers (more context = better debates)
+    targets = []
+    for item in items[:10]:
+        if len(targets) >= count:
+            break
+        title = item.get("title") or item.get("question", "")
+        if title:
+            targets.append({"title": title, "answers": item.get("answers", [])})
+
+    async def _run_debate(title: str, answers: list):
+        try:
+            async for event in debate.generate(title, context_answers=answers):
+                pass  # consume the generator — auto-publish happens in debate.py
+            log.info("Seed debate done: %s", title[:30])
+        except Exception as e:
+            log.warning("Seed debate failed for %s: %s", title[:30], e)
+
+    # Fire all debates in background (don't block the response)
+    for t in targets:
+        asyncio.create_task(_run_debate(t["title"], t["answers"][:5]))
+
+    return {
+        "ok": True,
+        "seeding": [t["title"][:40] for t in targets],
+        "message": f"Generating {len(targets)} debates in background",
+    }
