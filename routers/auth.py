@@ -22,7 +22,11 @@ OAUTH_BASE = "https://go.second.me/oauth/"
 
 
 def _base_url(request: Request) -> str:
-    return os.getenv("BASE_URL", "https://zhongsheng.ai-builders.space")
+    base = os.getenv("BASE_URL", "")
+    # Ignore platform-injected internal hostnames (e.g. koyeb.app)
+    if base and ".koyeb.app" not in base:
+        return base.rstrip("/")
+    return "https://zhongsheng.ai-builders.space"
 
 
 def _set_session(response: Response, data: dict):
