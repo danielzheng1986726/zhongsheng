@@ -17,7 +17,7 @@ MAX_AGE = 7 * 24 * 3600  # 7 days
 
 _signer = URLSafeTimedSerializer(SECRET_KEY)
 
-SECONDME_CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "")
+SECONDME_CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "1709f9d0-7c9f-4d6e-b45e-fa7386ed0772")
 OAUTH_BASE = "https://go.second.me/oauth/"
 
 

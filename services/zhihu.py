@@ -19,8 +19,8 @@ API_BASE = "https://openapi.zhihu.com"
 CACHE_DIR = Path(__file__).parent.parent / "zhihu_cache"
 CACHE_DIR.mkdir(exist_ok=True)
 
-AK = os.getenv("ZHIHU_AK", "")
-SK = os.getenv("ZHIHU_SK", "")
+AK = os.getenv("ZHIHU_AK", "zheng-xiao-dong-58")
+SK = os.getenv("ZHIHU_SK", "mF0RvwrFETO61olR5hudYlsTKJbRgHz5")
 
 # Hackathon circles
 CIRCLE_IDS = ["2001009660925334090", "2015023739549529606"]
