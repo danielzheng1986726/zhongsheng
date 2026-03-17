@@ -29,7 +29,7 @@ async def index():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": "2.1.0"}
 
 
 if __name__ == "__main__":
