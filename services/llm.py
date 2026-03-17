@@ -1,4 +1,4 @@
-"""AI Builder Chat API wrapper."""
+"""AI Builder Chat API wrapper with MiniMax support."""
 
 import os
 import json
@@ -8,7 +8,12 @@ import httpx
 
 log = logging.getLogger("llm")
 
-API_BASE = os.getenv("AI_BUILDER_API_BASE", "https://space.ai-builders.com/backend")
+AI_BUILDER_BASE = os.getenv("AI_BUILDER_API_BASE", "https://space.ai-builders.com/backend")
+MINIMAX_BASE = os.getenv("MINIMAX_API_BASE", "https://api.minimax.io")
+MINIMAX_KEY = os.getenv("MINIMAX_API_KEY", "")
+
+# MiniMax models use a different base URL and API key
+MINIMAX_MODELS = {"MiniMax-M2.5", "MiniMax-M2.5-highspeed", "MiniMax-M2.1", "MiniMax-M2.1-highspeed", "MiniMax-M2"}
 
 # gpt-5 requires max_tokens >= 1000 on AI Builder platform
 GPT5_MIN_TOKENS = 1000
@@ -16,6 +21,13 @@ GPT5_MIN_TOKENS = 1000
 
 def _token():
     return os.getenv("AI_BUILDER_TOKEN", "")
+
+
+def _resolve_endpoint(model: str) -> tuple[str, str]:
+    """Return (base_url, api_key) for the given model."""
+    if model in MINIMAX_MODELS and MINIMAX_KEY:
+        return MINIMAX_BASE, MINIMAX_KEY
+    return AI_BUILDER_BASE, _token()
 
 
 async def chat(
@@ -29,16 +41,18 @@ async def chat(
     if model.startswith("gpt-") and max_tokens < GPT5_MIN_TOKENS:
         max_tokens = GPT5_MIN_TOKENS
 
+    base_url, api_key = _resolve_endpoint(model)
+
     async with httpx.AsyncClient(timeout=120) as c:
         r = await c.post(
-            f"{API_BASE}/v1/chat/completions",
+            f"{base_url}/v1/chat/completions",
             json={
                 "model": model,
                 "messages": messages,
                 "temperature": temperature,
                 "max_tokens": max_tokens,
             },
-            headers={"Authorization": f"Bearer {_token()}"},
+            headers={"Authorization": f"Bearer {api_key}"},
         )
         r.raise_for_status()
         data = r.json()

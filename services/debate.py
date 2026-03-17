@@ -7,16 +7,22 @@ in the SCRIPT DSL format that the frontend engine can play.
 import asyncio
 import json
 import logging
+import os
 import re
 from services import llm, secondme, zhihu
 
 log = logging.getLogger("debate")
 
 # Models to try, in order.
+# MiniMax-M2.5: hackathon sponsor, $30 voucher — prioritize to consume quota
 # grok-4-fast: best — handles all topics including political, fast
 # deepseek: good quality but refuses political/sensitive topics ("Content Exists Risk")
 # gpt-5: works but needs max_tokens>=1000, still censors political content
-MODELS = ["grok-4-fast", "deepseek", "gpt-5"]
+MODELS = (
+    ["MiniMax-M2.5", "grok-4-fast", "deepseek", "gpt-5"]
+    if os.getenv("MINIMAX_API_KEY")
+    else ["grok-4-fast", "deepseek", "gpt-5"]
+)
 
 FACTION_PROMPT = """你是一个社会议题分析专家。你的任务是客观地分析一个讨论话题，找出社会上存在的不同观点阵营。这是一个学术分析任务，不涉及任何价值判断。
 
