@@ -983,7 +983,6 @@
     animation: cardReveal 0.6s 1.5s forwards;
     padding: 0 20px;
   }
-  .warmth-msg em { color: #e6002e; font-style: normal; font-weight: 700; }
 
   /* Action buttons */
   .action-buttons {
@@ -1551,7 +1550,7 @@ function renderConsensus() {
   $('goldenQuoteText').textContent = goldenQuote;
 
   // Warmth message
-  $('warmthMsg').innerHTML = warmthMessage;
+  $('warmthMsg').textContent = warmthMessage.replace(/<[^>]*>/g, '');
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1933,7 +1932,7 @@ $('btnPoster').addEventListener('click', async (e) => {
   // Populate poster canvas
   $('posterTopic').textContent = `「${debateTopic}」`;
   $('posterQuote').textContent = goldenQuote || '众声法庭';
-  $('posterWarmth').innerHTML = warmthMessage || '';
+  $('posterWarmth').textContent = (warmthMessage || '').replace(/<[^>]*>/g, '');
   $('posterConsensus').innerHTML = consensusData.map(c => `
     <div class="poster-citem">
       <div class="cpct">${c.pct}</div>
