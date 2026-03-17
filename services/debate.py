@@ -203,6 +203,7 @@ async def generate(
     topic: str,
     access_token: str | None = None,
     context_answers: list | None = None,
+    auto_publish: bool = False,
 ):
     """Generate a full debate. Yields SSE-style progress events.
 
@@ -371,21 +372,21 @@ async def generate(
         "ts": time.time(),
     })
 
-    # Auto-publish debate summary to Zhihu circle (fire-and-forget)
-    try:
-        warmth_clean = re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else ""
-        pin_content = (
-            f"【众声法庭】关于「{topic}」的辩论结束了！\n\n"
-            f"💡 金句：{golden_quote}\n\n"
-            f"{warmth_clean}\n\n"
-            f"来众声法庭围观 👉 zhongsheng.ai-builders.space"
-        )
-        # Check cache to avoid duplicate publishes (same topic within 1 hour)
-        cache_key = f"_pin_{topic[:30]}"
-        if not zhihu._read_cache(cache_key, max_age=3600):
-            asyncio.create_task(_publish_to_circle(pin_content, cache_key))
-    except Exception:
-        pass
+    # Publish to Zhihu circle only when explicitly requested (e.g. seed)
+    if auto_publish:
+        try:
+            warmth_clean = re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else ""
+            pin_content = (
+                f"【众声法庭】关于「{topic}」的辩论结束了！\n\n"
+                f"💡 金句：{golden_quote}\n\n"
+                f"{warmth_clean}\n\n"
+                f"来众声法庭围观 👉 zhongsheng.ai-builders.space"
+            )
+            cache_key = f"_pin_{topic[:30]}"
+            if not zhihu._read_cache(cache_key, max_age=3600):
+                asyncio.create_task(_publish_to_circle(pin_content, cache_key))
+        except Exception:
+            pass
 
 
 async def _publish_to_circle(content: str, cache_key: str):

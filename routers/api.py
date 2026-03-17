@@ -106,20 +106,6 @@ async def write_memory(request: Request):
         return {"error": str(e)}
 
 
-@router.post("/zhihu/publish")
-async def publish_to_circle(request: Request):
-    """Publish debate result to Zhihu circle as a pin."""
-    body = await request.json()
-    content = body.get("content", "")
-    if not content:
-        return {"error": "content is required"}
-
-    result = await zhihu.publish_pin(content)
-    if "error" in result:
-        return {"ok": False, "error": result["error"]}
-    return {"ok": True, "result": result}
-
-
 @router.post("/admin/seed")
 async def seed_debates(request: Request):
     """Pre-generate debates for top hotlist items to fill the theater feed.
@@ -147,8 +133,8 @@ async def seed_debates(request: Request):
 
     async def _run_debate(title: str, answers: list):
         try:
-            async for event in debate.generate(title, context_answers=answers):
-                pass  # consume the generator — auto-publish happens in debate.py
+            async for event in debate.generate(title, context_answers=answers, auto_publish=True):
+                pass  # consume the generator — publish to circle only for seed
             log.info("Seed debate done: %s", title[:30])
         except Exception as e:
             log.warning("Seed debate failed for %s: %s", title[:30], e)
