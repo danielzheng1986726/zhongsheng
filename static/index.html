@@ -1237,6 +1237,41 @@
   }
   .poster-overlay .poster-btn:hover { background: rgba(255,255,255,0.2); }
   .poster-overlay .poster-hint { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+  /* ============ Mobile Responsive ============ */
+  @media (max-width: 480px) {
+    /* Courtroom character cards — shrink to fit side by side */
+    .char-card {
+      width: 140px;
+      height: 190px;
+    }
+    .char-emoji { font-size: 56px; }
+    .char-title { font-size: 11px; padding: 2px 8px; }
+    .char-catchphrase { font-size: 10px; max-width: 120px; }
+    .char-label { font-size: 13px; padding: 4px 12px; letter-spacing: 2px; margin-top: 8px; }
+    .character { bottom: 190px; }
+    .character.left { left: 3%; }
+    .character.right { right: 3%; }
+
+    /* Dialogue box — shorter + smaller text */
+    .dialogue-box {
+      height: 185px;
+      padding: 14px 20px 18px;
+    }
+    .dialogue-text { font-size: 17px; line-height: 1.6; }
+    .speaker-name { font-size: 14px; padding: 4px 14px; letter-spacing: 2px; margin-bottom: 8px; }
+    .bench { bottom: 185px; }
+
+    /* Objection overlay */
+    .objection-overlay #objText { font-size: 60px; letter-spacing: 6px; }
+
+    /* VS splash */
+    .vs-splash .vs-text { font-size: 72px; }
+    .vs-splash .vs-names { font-size: 14px; }
+
+    /* Progress dots */
+    .progress .dot { width: 6px; height: 6px; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
