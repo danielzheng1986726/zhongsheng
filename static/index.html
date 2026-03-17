@@ -1346,6 +1346,31 @@
   <div class="toast-sub" id="toastSub"></div>
 </div>
 
+<!-- Poster: hidden canvas for html2canvas -->
+<div class="poster-canvas" id="posterCanvas">
+  <div class="poster-header">— 隐 藏 共 识 —</div>
+  <div class="poster-topic" id="posterTopic"></div>
+  <div class="poster-consensus" id="posterConsensus"></div>
+  <div class="poster-quote" id="posterQuote"></div>
+  <div class="poster-quote-label">— 众声 · 本场辩论金句 —</div>
+  <div class="poster-warmth" id="posterWarmth"></div>
+  <div class="poster-footer">
+    <div class="poster-logo">众 声</div>
+    <div class="poster-sub">VOICES — 知乎讨论理解地图</div>
+    <div class="poster-tag">#A2AforReconnect · 第2届知乎 × Second Me 黑客松</div>
+  </div>
+</div>
+
+<!-- Poster: fullscreen overlay -->
+<div class="poster-overlay" id="posterOverlay">
+  <img id="posterImage" src="" alt="海报">
+  <div class="poster-actions">
+    <a class="poster-btn" id="posterDownload" download="众声海报.png">保存海报</a>
+    <button class="poster-btn" id="posterClose">关闭</button>
+  </div>
+  <div class="poster-hint">长按图片可保存到相册</div>
+</div>
+
 <script>
 // ============ Dynamic Data (populated from API) ============
 let CHARS = {};
@@ -2006,31 +2031,6 @@ $('nextCaseBtn').addEventListener('click', (e) => {
   }
 });
 </script>
-
-<!-- Poster: hidden canvas for html2canvas -->
-<div class="poster-canvas" id="posterCanvas">
-  <div class="poster-header">— 隐 藏 共 识 —</div>
-  <div class="poster-topic" id="posterTopic"></div>
-  <div class="poster-consensus" id="posterConsensus"></div>
-  <div class="poster-quote" id="posterQuote"></div>
-  <div class="poster-quote-label">— 众声 · 本场辩论金句 —</div>
-  <div class="poster-warmth" id="posterWarmth"></div>
-  <div class="poster-footer">
-    <div class="poster-logo">众 声</div>
-    <div class="poster-sub">VOICES — 知乎讨论理解地图</div>
-    <div class="poster-tag">#A2AforReconnect · 第2届知乎 × Second Me 黑客松</div>
-  </div>
-</div>
-
-<!-- Poster: fullscreen overlay -->
-<div class="poster-overlay" id="posterOverlay">
-  <img id="posterImage" src="" alt="海报">
-  <div class="poster-actions">
-    <a class="poster-btn" id="posterDownload" download="众声海报.png">保存海报</a>
-    <button class="poster-btn" id="posterClose">关闭</button>
-  </div>
-  <div class="poster-hint">长按图片可保存到相册</div>
-</div>
 
 </body>
 </html>
