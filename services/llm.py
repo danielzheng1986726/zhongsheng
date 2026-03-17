@@ -3,6 +3,7 @@
 import os
 import json
 import logging
+import re
 
 import httpx
 
@@ -59,6 +60,10 @@ async def chat(
         content = data["choices"][0]["message"]["content"]
         if not content or not content.strip():
             raise ValueError(f"Model {model} returned empty content")
+        # Strip <think>...</think> reasoning blocks (MiniMax-M2.5 etc.)
+        content = re.sub(r"<think>.*?</think>\s*", "", content, flags=re.DOTALL)
+        if not content.strip():
+            raise ValueError(f"Model {model} returned only think tags, no content")
         return content
 
 
