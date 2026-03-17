@@ -27,6 +27,14 @@ async def generate_debate(request: Request):
     """
     body = await request.json()
     topic = body.get("topic", "")
+    url = body.get("url", "")
+
+    # If a URL was provided, try to resolve the title
+    if url and (not topic or topic == '正在解析讨论...'):
+        resolved = await zhihu.get_question_title(url)
+        if resolved:
+            topic = resolved
+
     if not topic:
         return {"error": "topic is required"}
 
@@ -44,6 +52,18 @@ async def generate_debate(request: Request):
             yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@router.get("/feed")
+async def feed():
+    """Return recent debate activity from Zhihu circle posts."""
+    # Cache circle posts for 5 minutes to avoid rate limits
+    cached = zhihu._read_cache("_feed", max_age=300)
+    if cached is not None:
+        return {"posts": cached}
+    posts = await zhihu.get_circle_posts(page_size=10)
+    zhihu._write_cache("_feed", posts)
+    return {"posts": posts}
 
 
 @router.post("/secondme/memory")

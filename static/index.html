@@ -151,6 +151,56 @@
   .url-submit:hover { transform: skewX(-4deg) scale(1.03); }
 
   /* Hot list */
+  /* Feed section */
+  .feed-section {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .feed-section.hidden { display: none; }
+  .feed-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #555; letter-spacing: 3px;
+    margin-bottom: 10px; padding-left: 4px; transform: skewX(-2deg);
+  }
+  .feed-counter {
+    font-size: 11px; color: rgba(230,0,46,0.6); margin-left: auto;
+    letter-spacing: 0; transform: skewX(2deg);
+  }
+  .feed-scroll {
+    display: flex; gap: 12px; overflow-x: auto;
+    padding-bottom: 8px; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .feed-scroll::-webkit-scrollbar { display: none; }
+  .feed-card {
+    min-width: 240px; max-width: 260px;
+    scroll-snap-align: start;
+    background: #0f0f0f; border: 1px solid #1a1a1a;
+    border-radius: 4px; padding: 14px 16px;
+    cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+  }
+  .feed-card:hover { border-color: #e6002e; transform: translateY(-2px); }
+  .feed-card .feed-topic {
+    font-size: 13px; font-weight: 700; color: #eee;
+    line-height: 1.4; margin-bottom: 8px;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .feed-card .feed-quote {
+    font-size: 11px; color: #f8d56e; line-height: 1.4;
+    margin-bottom: 8px;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .feed-card .feed-meta {
+    font-size: 10px; color: #444;
+  }
+
   .hot-section {
     max-width: 600px;
     margin: 0 auto;
@@ -1035,7 +1085,88 @@
   }
   .sound-toggle:hover { border-color: #e6002e; background: rgba(230, 0, 46, 0.05); }
   .sound-toggle.muted { color: #333; }
+
+  /* ========== Poster Generation ========== */
+  .poster-canvas {
+    position: fixed; left: -9999px; top: 0;
+    width: 375px; height: 667px;
+    background: #0e0818;
+    font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+    color: #fff;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    padding: 32px 24px 20px;
+    z-index: -1;
+  }
+  .poster-canvas .poster-header {
+    text-align: center; font-size: 13px; color: rgba(255,255,255,0.4);
+    letter-spacing: 2px; margin-bottom: 8px;
+  }
+  .poster-canvas .poster-topic {
+    font-size: 20px; font-weight: 900; text-align: center;
+    color: #ff4444; line-height: 1.4;
+    text-shadow: 0 0 20px rgba(255,50,50,0.3);
+    margin-bottom: 16px;
+  }
+  .poster-canvas .poster-consensus {
+    display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;
+  }
+  .poster-canvas .poster-citem {
+    flex: 1; text-align: center; padding: 10px 6px;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+  }
+  .poster-canvas .poster-citem .cpct { font-size: 24px; font-weight: 900; color: #f8d56e; }
+  .poster-canvas .poster-citem .clbl { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; line-height: 1.3; }
+  .poster-canvas .poster-quote {
+    padding: 14px 16px; margin-bottom: 12px;
+    border-left: 3px solid #f8d56e;
+    background: rgba(248,213,110,0.06);
+    font-size: 15px; font-weight: 700; color: #f8d56e;
+    line-height: 1.5;
+  }
+  .poster-canvas .poster-quote-label {
+    text-align: center; font-size: 11px; color: rgba(255,255,255,0.3);
+    margin-bottom: 14px;
+  }
+  .poster-canvas .poster-warmth {
+    font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6;
+    text-align: center; margin-bottom: auto;
+  }
+  .poster-canvas .poster-warmth em { color: #ff6644; font-style: normal; font-weight: 700; }
+  .poster-canvas .poster-footer {
+    text-align: center; margin-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;
+  }
+  .poster-canvas .poster-logo {
+    font-size: 22px; font-weight: 900; letter-spacing: 6px;
+    background: linear-gradient(135deg, #f8d56e, #e87850);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .poster-canvas .poster-sub { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+  .poster-canvas .poster-tag { font-size: 9px; color: rgba(255,255,255,0.2); margin-top: 8px; }
+
+  /* Poster overlay */
+  .poster-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .poster-overlay.active { opacity: 1; pointer-events: auto; }
+  .poster-overlay img { max-width: 90vw; max-height: 75vh; border-radius: 8px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+  .poster-overlay .poster-actions { display: flex; gap: 12px; }
+  .poster-overlay .poster-btn {
+    padding: 10px 24px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1);
+    color: #fff; font-size: 14px; cursor: pointer;
+  }
+  .poster-overlay .poster-btn:hover { background: rgba(255,255,255,0.2); }
+  .poster-overlay .poster-hint { font-size: 12px; color: rgba(255,255,255,0.4); }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -1063,6 +1194,15 @@
   <div class="url-input-area">
     <input class="url-input" id="urlInput" type="text" placeholder="输入任意讨论话题，如「年轻人该不该躺平」" />
     <button class="url-submit" id="urlSubmit">分析</button>
+  </div>
+
+  <!-- Feed: recent debates -->
+  <div class="feed-section hidden" id="feedSection">
+    <div class="feed-title">
+      📡 最近开庭
+      <span class="feed-counter" id="feedCounter"></span>
+    </div>
+    <div class="feed-scroll" id="feedScroll"><!-- dynamic from /api/feed --></div>
   </div>
 
   <!-- Hot list -->
@@ -1183,11 +1323,8 @@
     <button class="action-btn" id="btnPoster">
       <span class="btn-icon">🖼️</span> 生成分享海报
     </button>
-    <button class="action-btn" id="btnQuote">
-      <span class="btn-icon">✍️</span> 复制金句卡片
-    </button>
-    <button class="action-btn zhihu" id="btnCircle">
-      <span class="btn-icon">💬</span> 分享到知乎圈子
+    <button class="action-btn zhihu" id="btnShare" style="border-color:rgba(248,213,110,0.4);font-weight:700">
+      <span class="btn-icon">📋</span> 一键复制分享文案
       <span class="step-api-label api-zhihu" style="margin-left:2px">圈子 API</span>
     </button>
     <button class="action-btn secondme" id="btnMemory">
@@ -1217,6 +1354,7 @@ let debateTopic = '';
 let consensusData = [];
 let goldenQuote = '';
 let warmthMessage = '';
+let currentHotlistIndex = -1;
 
 // ============ Engine ============
 let currentStep = 0;
@@ -1273,7 +1411,7 @@ $('soundToggle').addEventListener('click', (e) => {
 });
 
 // --- Loading sequence (SSE-powered) ---
-async function startLoading(topic, itemData) {
+async function startLoading(topic, itemData, url) {
   debateTopic = topic;
   $('loadingTitle').textContent = `「${topic}」`;
   $('navPage').classList.add('hidden');
@@ -1289,6 +1427,7 @@ async function startLoading(topic, itemData) {
 
   // Build request body — include answer snippets from hotlist if available
   const reqBody = { topic };
+  if (url) reqBody.url = url;
   if (itemData && itemData.answers && itemData.answers.length) {
     reqBody.context_answers = itemData.answers.slice(0, 5).map(a => ({
       author: a.author_name || '',
@@ -1316,6 +1455,12 @@ async function startLoading(topic, itemData) {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const event = JSON.parse(line.slice(6));
+
+        // Update title if backend resolved it from a URL
+        if (event.topic && debateTopic !== event.topic) {
+          debateTopic = event.topic;
+          $('loadingTitle').textContent = `「${debateTopic}」`;
+        }
 
         if (event.phase === 'done') {
           // Apply data
@@ -1629,11 +1774,64 @@ async function loadHotlist() {
       const topic = card.dataset.topic;
       const idx = parseInt(card.dataset.idx);
       const itemData = (window._hotlistItems || [])[idx] || null;
+      currentHotlistIndex = idx;
       if (topic) startLoading(topic, itemData);
     });
   });
 }
 loadHotlist();
+
+// Nav: load feed (recent debates from circle)
+async function loadFeed() {
+  try {
+    const resp = await fetch('/api/feed');
+    const data = await resp.json();
+    const posts = data.posts || [];
+    if (!posts.length) return;
+
+    // Parse circle posts for debate summaries
+    const debatePosts = posts.filter(p => {
+      const text = p.content || p.excerpt || '';
+      return text.includes('众声法庭') || text.includes('金句');
+    });
+    if (!debatePosts.length) return;
+
+    $('feedSection').classList.remove('hidden');
+    $('feedCounter').textContent = `${debatePosts.length} 场辩论`;
+
+    $('feedScroll').innerHTML = debatePosts.slice(0, 8).map(p => {
+      const text = p.content || p.excerpt || '';
+      // Extract topic from 「...」
+      const topicMatch = text.match(/「(.+?)」/);
+      const topic = topicMatch ? topicMatch[1] : text.slice(0, 30);
+      // Extract quote from 💡 金句：...
+      const quoteMatch = text.match(/💡\s*金句[：:]\s*(.+?)(?:\n|$)/);
+      const quote = quoteMatch ? quoteMatch[1] : '';
+      const likes = p.reaction_count || p.like_count || 0;
+      const comments = p.comment_count || 0;
+      return `
+        <div class="feed-card" data-topic="${topic.replace(/"/g, '&quot;')}">
+          <div class="feed-topic">${topic}</div>
+          ${quote ? `<div class="feed-quote">💡 ${quote}</div>` : ''}
+          <div class="feed-meta">${likes ? '❤ '+likes : ''} ${comments ? '💬 '+comments : ''}</div>
+        </div>`;
+    }).join('');
+
+    // Click feed card → start debate on that topic
+    $('feedScroll').querySelectorAll('.feed-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const topic = card.dataset.topic;
+        if (topic) {
+          currentHotlistIndex = -1;
+          startLoading(topic);
+        }
+      });
+    });
+  } catch (e) {
+    // Feed is optional, fail silently
+  }
+}
+loadFeed();
 
 // Nav: URL/topic submit — supports free text topics
 $('urlSubmit').addEventListener('click', () => {
@@ -1642,7 +1840,14 @@ $('urlSubmit').addEventListener('click', () => {
     showToast('💡', '请输入一个讨论话题', '');
     return;
   }
-  startLoading(input);
+  // If input looks like a URL, show a clean loading title and pass url to backend
+  if (/https?:\/\//.test(input)) {
+    currentHotlistIndex = -1;
+    startLoading('正在解析讨论...', null, input);
+  } else {
+    currentHotlistIndex = -1;
+    startLoading(input);
+  }
 });
 $('urlInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') $('urlSubmit').click();
@@ -1696,27 +1901,58 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Results: action buttons
-$('btnPoster').addEventListener('click', (e) => {
+$('btnPoster').addEventListener('click', async (e) => {
   e.stopPropagation();
-  showToast('🖼️', '海报已生成', '长按保存或分享到朋友圈');
+  showToast('🖼️', '正在生成海报...', '');
+
+  // Populate poster canvas
+  $('posterTopic').textContent = `「${debateTopic}」`;
+  $('posterQuote').textContent = goldenQuote || '众声法庭';
+  $('posterWarmth').innerHTML = warmthMessage || '';
+  $('posterConsensus').innerHTML = consensusData.map(c => `
+    <div class="poster-citem">
+      <div class="cpct">${c.pct}</div>
+      <div class="clbl">${c.label}</div>
+    </div>
+  `).join('');
+
+  // Move poster canvas on-screen temporarily for html2canvas
+  const canvas = $('posterCanvas');
+  canvas.style.left = '0';
+  canvas.style.zIndex = '1';
+
+  try {
+    const cvs = await html2canvas(canvas, {
+      width: 375, height: 667,
+      scale: 2, backgroundColor: '#0e0818',
+      useCORS: true, logging: false,
+    });
+    canvas.style.left = '-9999px';
+    canvas.style.zIndex = '-1';
+
+    const dataUrl = cvs.toDataURL('image/png');
+    $('posterImage').src = dataUrl;
+    $('posterDownload').href = dataUrl;
+    $('posterOverlay').classList.add('active');
+  } catch (err) {
+    canvas.style.left = '-9999px';
+    canvas.style.zIndex = '-1';
+    console.error('Poster generation failed:', err);
+    showToast('❌', '海报生成失败', '请稍后重试');
+  }
 });
-$('btnQuote').addEventListener('click', (e) => {
-  e.stopPropagation();
-  const quote = goldenQuote ? `${goldenQuote} —— 众声 Voices` : '众声 Voices';
-  navigator.clipboard.writeText(quote).then(() => {
-    showToast('✍️', '金句已复制到剪贴板', goldenQuote);
-  }).catch(() => {
-    showToast('✍️', '复制失败，请手动复制', goldenQuote);
-  });
+
+$('posterClose').addEventListener('click', () => {
+  $('posterOverlay').classList.remove('active');
 });
-$('btnCircle').addEventListener('click', (e) => {
+$('posterOverlay').addEventListener('click', (e) => {
+  if (e.target === $('posterOverlay')) $('posterOverlay').classList.remove('active');
+});
+$('btnShare').addEventListener('click', (e) => {
   e.stopPropagation();
-  const content = `【众声法庭】关于「${debateTopic}」的辩论结束了！\n\n💡 金句：${goldenQuote}\n\n${warmthMessage.replace(/<[^>]+>/g, '')}\n\n来众声法庭，看看你关心的话题背后藏着什么共识 👉`;
+  const content = `【众声法庭】关于「${debateTopic}」的辩论结束了！\n\n💡 金句：${goldenQuote}\n\n${warmthMessage.replace(/<[^>]+>/g, '')}\n\n来众声法庭，看看你关心的话题背后藏着什么共识 👉 zhongsheng.ai-builders.space`;
   navigator.clipboard.writeText(content).then(() => {
-    showToast('💬', '文案已复制', '即将跳转到知乎圈子，粘贴发布即可', 2500);
-    setTimeout(() => {
-      window.open('https://www.zhihu.com/club/2001009660925334090', '_blank');
-    }, 1200);
+    showToast('📋', '分享文案已复制', '可粘贴到朋友圈、微信、知乎等', 2500);
   }).catch(() => {
     showToast('⚠️', '复制失败', '请手动复制文案', 2500);
   });
@@ -1755,12 +1991,46 @@ $('restartBtn').addEventListener('click', (e) => {
 $('nextCaseBtn').addEventListener('click', (e) => {
   e.stopPropagation();
   $('consensusCard').classList.remove('active');
-  $('navPage').classList.remove('hidden');
-  currentStep = 0;
   hideChar('left');
   hideChar('right');
+  currentStep = 0;
+
+  const items = window._hotlistItems || [];
+  if (currentHotlistIndex >= 0 && currentHotlistIndex < items.length - 1) {
+    currentHotlistIndex++;
+    const next = items[currentHotlistIndex];
+    startLoading(next.title || next.question || '未知话题', next);
+  } else {
+    // Reached the end or no index — go back to list
+    $('navPage').classList.remove('hidden');
+  }
 });
 </script>
+
+<!-- Poster: hidden canvas for html2canvas -->
+<div class="poster-canvas" id="posterCanvas">
+  <div class="poster-header">— 隐 藏 共 识 —</div>
+  <div class="poster-topic" id="posterTopic"></div>
+  <div class="poster-consensus" id="posterConsensus"></div>
+  <div class="poster-quote" id="posterQuote"></div>
+  <div class="poster-quote-label">— 众声 · 本场辩论金句 —</div>
+  <div class="poster-warmth" id="posterWarmth"></div>
+  <div class="poster-footer">
+    <div class="poster-logo">众 声</div>
+    <div class="poster-sub">VOICES — 知乎讨论理解地图</div>
+    <div class="poster-tag">#A2AforReconnect · 第2届知乎 × Second Me 黑客松</div>
+  </div>
+</div>
+
+<!-- Poster: fullscreen overlay -->
+<div class="poster-overlay" id="posterOverlay">
+  <img id="posterImage" src="" alt="海报">
+  <div class="poster-actions">
+    <a class="poster-btn" id="posterDownload" download="众声海报.png">保存海报</a>
+    <button class="poster-btn" id="posterClose">关闭</button>
+  </div>
+  <div class="poster-hint">长按图片可保存到相册</div>
+</div>
 
 </body>
 </html>

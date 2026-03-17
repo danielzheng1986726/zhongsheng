@@ -4,8 +4,10 @@ Takes a topic and generates a full courtroom debate script
 in the SCRIPT DSL format that the frontend engine can play.
 """
 
+import asyncio
 import json
 import logging
+import re
 from services import llm, secondme, zhihu
 
 log = logging.getLogger("debate")
@@ -183,7 +185,7 @@ async def generate(
     context = ""
 
     # Step 1: Build context from hotlist answers or Zhihu search
-    yield {"phase": "fetching", "message": "正在获取讨论数据..."}
+    yield {"phase": "fetching", "message": "正在获取讨论数据...", "topic": topic}
     search_results = []
     if not context_answers:
         try:
@@ -325,3 +327,32 @@ async def generate(
         "topic": topic,
         "user_char": user_char,
     }
+
+    # Auto-publish debate summary to Zhihu circle (fire-and-forget)
+    try:
+        warmth_clean = re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else ""
+        pin_content = (
+            f"【众声法庭】关于「{topic}」的辩论结束了！\n\n"
+            f"💡 金句：{golden_quote}\n\n"
+            f"{warmth_clean}\n\n"
+            f"来众声法庭围观 👉 zhongsheng.ai-builders.space"
+        )
+        # Check cache to avoid duplicate publishes (same topic within 1 hour)
+        cache_key = f"_pin_{topic[:30]}"
+        if not zhihu._read_cache(cache_key, max_age=3600):
+            asyncio.create_task(_publish_to_circle(pin_content, cache_key))
+    except Exception:
+        pass
+
+
+async def _publish_to_circle(content: str, cache_key: str):
+    """Background task to publish to circle and cache the result."""
+    try:
+        result = await zhihu.publish_pin(content)
+        if "error" not in result:
+            zhihu._write_cache(cache_key, {"published": True})
+            log.info("Auto-published to circle: %s", cache_key)
+        else:
+            log.warning("Circle publish failed: %s", result)
+    except Exception as e:
+        log.warning("Circle publish error: %s", e)

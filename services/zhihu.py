@@ -139,6 +139,27 @@ async def search(query: str, count: int = 10) -> list:
         return []
 
 
+async def get_question_title(url: str) -> str:
+    """Extract question title from a Zhihu URL by fetching the page."""
+    import re
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
+            r = await c.get(url, headers={"User-Agent": "Mozilla/5.0"})
+            r.raise_for_status()
+            # Try <title> tag first
+            m = re.search(r"<title[^>]*>(.+?)</title>", r.text, re.DOTALL)
+            if m:
+                title = m.group(1).strip()
+                # Clean up common suffixes like " - 知乎" or " - xxx的文章"
+                title = re.sub(r'\s*[-–—]\s*知乎$', '', title)
+                title = re.sub(r'\s*[-–—]\s*\S+的(文章|回答).*$', '', title)
+                if title and title != '知乎':
+                    return title
+    except Exception:
+        pass
+    return ""
+
+
 # ============ Zhihu Circle (圈子) API ============
 
 
