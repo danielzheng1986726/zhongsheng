@@ -1445,8 +1445,20 @@ async function startLoading(topic, itemData, url) {
   const bar = $('loadingBarFill');
   const phaseMap = { fetching: 0, analyzing: 1, factions: 2, secondme: 3, scripting: 3, ready: 4 };
 
-  // Reset loading steps
-  steps.forEach(id => { const el = $(id); el.classList.remove('active', 'done'); });
+  // Reset loading steps (classes + text to defaults)
+  const defaultTexts = [
+    '通过知乎可信搜获取讨论内容',
+    '分析 354 条回答中的立场与论据',
+    '生成 5 个观点代理人',
+    '读取你的 Second Me 认知画像',
+    '刘看山审判长就位，准备开庭',
+  ];
+  steps.forEach((id, i) => {
+    const el = $(id);
+    el.classList.remove('active', 'done');
+    const span = el.querySelector('span:first-of-type');
+    if (span && defaultTexts[i]) span.textContent = defaultTexts[i];
+  });
   bar.style.width = '0%';
 
   // Build request body — include answer snippets from hotlist if available
