@@ -1891,37 +1891,27 @@ loadHotlist();
 // Nav: load feed (recent debates from circle)
 async function loadTheater() {
   try {
-    const resp = await fetch('/api/feed');
+    const resp = await fetch('/api/theater');
     const data = await resp.json();
-    const posts = data.posts || [];
+    const debates = data.debates || [];
 
-    // Parse circle posts for debate summaries
-    const debatePosts = posts.filter(p => {
-      const text = p.content || p.excerpt || '';
-      return text.includes('众声法庭') || text.includes('金句');
-    });
-
-    if (!debatePosts.length) {
-      // Show empty state (already in HTML)
+    if (!debates.length) {
       $('theaterCounter').textContent = '';
       return;
     }
 
-    $('theaterCounter').textContent = `${debatePosts.length} 场辩论`;
+    $('theaterCounter').textContent = `${debates.length} 场辩论`;
 
-    $('theaterScroll').innerHTML = debatePosts.slice(0, 8).map(p => {
-      const text = p.content || p.excerpt || '';
-      const topicMatch = text.match(/「(.+?)」/);
-      const topic = topicMatch ? topicMatch[1] : text.slice(0, 30);
-      const quoteMatch = text.match(/💡\s*金句[：:]\s*(.+?)(?:\n|$)/);
-      const quote = quoteMatch ? quoteMatch[1] : '';
-      const time = p.created_time ? new Date(p.created_time * 1000).toLocaleDateString('zh-CN', {month:'short', day:'numeric'}) : '';
+    $('theaterScroll').innerHTML = debates.slice(0, 8).map(d => {
+      const topic = d.topic || '';
+      const quote = d.golden_quote || '';
+      const ts = d.ts ? new Date(d.ts * 1000).toLocaleDateString('zh-CN', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
       return `
         <div class="theater-card" data-topic="${topic.replace(/"/g, '&quot;')}">
-          <div class="tc-topic">${topic}</div>
+          <div class="tc-topic">${topic.length > 40 ? topic.slice(0,40) + '…' : topic}</div>
           ${quote ? `<div class="tc-quote">${quote}</div>` : ''}
           <div class="tc-footer">
-            <span>${time}</span>
+            <span>${ts}</span>
             <span class="tc-cta">点击围观 →</span>
           </div>
         </div>`;

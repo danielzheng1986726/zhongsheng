@@ -70,6 +70,13 @@ async def feed():
     return {"posts": posts}
 
 
+@router.get("/theater")
+async def theater():
+    """Return completed debates from in-memory history (most recent first)."""
+    items = list(reversed(debate.completed_debates[-20:]))
+    return {"debates": items, "total": len(debate.completed_debates)}
+
+
 @router.post("/secondme/memory")
 async def write_memory(request: Request):
     """Write debate result to user's Second Me agent memory."""

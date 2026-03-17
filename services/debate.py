@@ -9,9 +9,14 @@ import json
 import logging
 import os
 import re
+import time
 from services import llm, secondme, zhihu
 
 log = logging.getLogger("debate")
+
+# In-memory completed debate history (survives until process restart)
+# Each entry: {"topic": str, "golden_quote": str, "warmth_message": str, "ts": float}
+completed_debates: list[dict] = []
 
 # Models to try, in order.
 # MiniMax-M2.5: hackathon sponsor, $30 voucher — use for lighter prompts (factions)
@@ -344,6 +349,14 @@ async def generate(
         "topic": topic,
         "user_char": user_char,
     }
+
+    # Record to in-memory history for theater display
+    completed_debates.append({
+        "topic": topic,
+        "golden_quote": golden_quote or "",
+        "warmth_message": re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else "",
+        "ts": time.time(),
+    })
 
     # Auto-publish debate summary to Zhihu circle (fire-and-forget)
     try:
