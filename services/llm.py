@@ -81,4 +81,16 @@ async def chat_json(
         first_nl = text.index("\n")
         last_fence = text.rfind("```")
         text = text[first_nl + 1 : last_fence].strip()
-    return json.loads(text)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Fallback: extract JSON object/array from surrounding text
+        for start_char, end_char in [("{", "}"), ("[", "]")]:
+            start = text.find(start_char)
+            end = text.rfind(end_char)
+            if start != -1 and end > start:
+                try:
+                    return json.loads(text[start : end + 1])
+                except json.JSONDecodeError:
+                    continue
+        raise

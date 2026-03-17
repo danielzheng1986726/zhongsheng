@@ -14,15 +14,20 @@ from services import llm, secondme, zhihu
 log = logging.getLogger("debate")
 
 # Models to try, in order.
-# MiniMax-M2.5: hackathon sponsor, $30 voucher — prioritize to consume quota
-# grok-4-fast: best — handles all topics including political, fast
+# MiniMax-M2.5: hackathon sponsor, $30 voucher — use for lighter prompts (factions)
+# grok-4-fast: best — handles all topics including political, fast, reliable for heavy JSON
 # deepseek: good quality but refuses political/sensitive topics ("Content Exists Risk")
 # gpt-5: works but needs max_tokens>=1000, still censors political content
-MODELS = (
-    ["MiniMax-M2.5", "grok-4-fast", "deepseek", "gpt-5"]
-    if os.getenv("MINIMAX_API_KEY")
+_HAS_MINIMAX = bool(os.getenv("MINIMAX_API_KEY"))
+
+# Faction analysis: lighter prompt, MiniMax highspeed is fast + good enough here
+FACTION_MODELS = (
+    ["MiniMax-M2.5-highspeed", "grok-4-fast", "deepseek", "gpt-5"]
+    if _HAS_MINIMAX
     else ["grok-4-fast", "deepseek", "gpt-5"]
 )
+# Script generation: heavy prompt (25-35 steps JSON), MiniMax disconnects — skip it
+SCRIPT_MODELS = ["grok-4-fast", "deepseek", "gpt-5"]
 
 FACTION_PROMPT = """你是一个社会议题分析专家。你的任务是客观地分析一个讨论话题，找出社会上存在的不同观点阵营。这是一个学术分析任务，不涉及任何价值判断。
 
@@ -124,10 +129,16 @@ def _build_context(context_answers: list, search_results: list) -> str:
     return ""
 
 
-async def _llm_with_fallback(messages: list, temperature: float = 0.5, max_tokens: int = 4096) -> dict | list:
+async def _llm_with_fallback(
+    messages: list,
+    temperature: float = 0.5,
+    max_tokens: int = 4096,
+    models: list | None = None,
+) -> dict | list:
     """Try multiple models, falling back if one refuses or errors."""
+    model_list = models or FACTION_MODELS
     last_error = None
-    for model in MODELS:
+    for model in model_list:
         try:
             result = await llm.chat_json(messages, model=model, temperature=temperature, max_tokens=max_tokens)
             return result
@@ -206,7 +217,7 @@ async def generate(
         {"role": "user", "content": FACTION_PROMPT.format(topic=topic, context=context)}
     ]
     try:
-        faction_data = await _llm_with_fallback(faction_messages, temperature=0.5)
+        faction_data = await _llm_with_fallback(faction_messages, temperature=0.5, models=FACTION_MODELS)
         factions = faction_data["factions"][:4]
     except Exception as e:
         log.warning(f"Faction analysis failed: {e}")
@@ -245,7 +256,7 @@ async def generate(
         }
     ]
     try:
-        result = await _llm_with_fallback(script_messages, temperature=0.7, max_tokens=8192)
+        result = await _llm_with_fallback(script_messages, temperature=0.7, max_tokens=8192, models=SCRIPT_MODELS)
         script = result["script"]
         consensus_items = result.get("consensus_items", [])
         golden_quote = result.get("golden_quote", "")
