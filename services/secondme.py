@@ -6,8 +6,8 @@ import json
 import httpx
 
 BASE = "https://api.mindverse.com/gate/lab"
-CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "")
-CLIENT_SECRET = os.getenv("SECONDME_CLIENT_SECRET", "")
+CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "1709f9d0-7c9f-4d6e-b45e-fa7386ed0772")
+CLIENT_SECRET = os.getenv("SECONDME_CLIENT_SECRET", "REDACTED_SECONDME_CLIENT_SECRET")
 
 
 async def exchange_code(code: str, redirect_uri: str) -> dict:

@@ -1284,6 +1284,20 @@
     </div>
   </div>
 
+  <!-- 🧑‍⚖️ 旁听席 (Auditorium) — between theater and hotlist for visibility -->
+  <div class="auditorium-section" id="auditoriumSection">
+    <div class="auditorium-title">
+      🧑‍⚖️ 旁听席
+      <span class="aud-badge">A2A</span>
+      <span class="aud-counter" id="audCounter"></span>
+    </div>
+    <div id="audReactions" class="aud-reactions"></div>
+    <div class="auditorium-placeholder" id="auditoriumContent">
+      <div class="ap-text">🎭 辩论少了一个人——你的 AI 分身还没到场</div>
+      <div class="ap-btn" id="auditoriumLogin">登录 Second Me，让分身出庭 →</div>
+    </div>
+  </div>
+
   <!-- 🔥 知乎热榜 -->
   <div class="hot-section">
     <div class="hot-title">
@@ -1293,25 +1307,11 @@
     <div id="caseList"><!-- dynamic from /api/hotlist --></div>
   </div>
 
-  <!-- 🧑‍⚖️ 旁听席 (Auditorium) -->
-  <div class="auditorium-section" id="auditoriumSection">
-    <div class="auditorium-title">
-      🧑‍⚖️ 旁听席
-      <span class="aud-badge">A2A</span>
-      <span class="aud-counter" id="audCounter"></span>
-    </div>
-    <div id="audReactions" class="aud-reactions"></div>
-    <div class="auditorium-placeholder" id="auditoriumContent">
-      <div class="ap-text">你的 <em>Second Me</em> 分身如何看待这些争论？<br>登录后，分身将自动旁听每场辩论并发表看法。</div>
-      <div class="ap-btn" id="auditoriumLogin">连接 Second Me →</div>
-    </div>
-  </div>
-
   <!-- SecondMe bar -->
   <div class="secondme-bar" id="secondmeBar">
     <div class="secondme-icon">🤖</div>
-    <div class="secondme-text" id="secondmeText">连接 <em>Second Me</em> 获取个性化解读</div>
-    <button class="secondme-btn" id="secondmeLogin">授权登录</button>
+    <div class="secondme-text" id="secondmeText">🎭 辩论少了一个人——<em>你的 AI 分身还没到场</em></div>
+    <button class="secondme-btn" id="secondmeLogin">让分身出庭</button>
   </div>
 </div>
 
@@ -1983,8 +1983,13 @@ async function checkAuth() {
     if (data.logged_in) {
       $('secondmeBar').innerHTML = `
         <div class="secondme-icon">🤖</div>
-        <div class="secondme-text">已连接 <em>Second Me</em> · ${data.name} · 个性化解读已开启</div>
+        <div class="secondme-text">✅ ${data.name} 的 AI 分身已就位 · 辩论中将自动出庭</div>
       `;
+      // Update auditorium placeholder for logged-in users
+      const apText = $('auditoriumContent').querySelector('.ap-text');
+      if (apText) apText.textContent = '✅ 你的分身已就位，开一场辩论试试！';
+      const apBtn = $('auditoriumContent').querySelector('.ap-btn');
+      if (apBtn) apBtn.style.display = 'none';
     }
   } catch (e) {}
 }
