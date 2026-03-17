@@ -18,6 +18,10 @@ log = logging.getLogger("debate")
 # Each entry: {"topic": str, "golden_quote": str, "warmth_message": str, "ts": float}
 completed_debates: list[dict] = []
 
+# In-memory auditorium reactions from Second Me agents
+# Each entry: {"user_name": str, "user_avatar": str, "reaction": str, "topic": str, "ts": float}
+auditorium_reactions: list[dict] = []
+
 # Models to try, in order.
 # MiniMax-M2.5: hackathon sponsor, $30 voucher — use for lighter prompts (factions)
 # grok-4-fast: best — handles all topics including political, fast, reliable for heavy JSON
@@ -333,6 +337,15 @@ async def generate(
                     {"type": "say", "side": "left", "char": "user_avatar", "expr": "think", "text": sm_response, "effect": "spark"},
                 ]
                 script = script[:insert_idx] + user_steps + script[insert_idx:]
+
+                # Save reaction to auditorium
+                auditorium_reactions.append({
+                    "user_name": user_name,
+                    "user_avatar": user_info.get("avatar", ""),
+                    "reaction": sm_response,
+                    "topic": topic,
+                    "ts": time.time(),
+                })
         except Exception:
             pass
 

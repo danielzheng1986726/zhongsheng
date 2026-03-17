@@ -253,6 +253,26 @@
     font-weight: 700; cursor: pointer; transition: background 0.2s;
   }
   .auditorium-placeholder .ap-btn:hover { background: rgba(80,224,176,0.2); }
+  /* Reaction cards in auditorium */
+  .aud-reactions { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .aud-reaction {
+    background: #0f0f0f; border: 1px solid #1a1a1a; border-left: 3px solid #50e0b0;
+    border-radius: 4px; padding: 12px 14px; text-align: left;
+  }
+  .aud-reaction .ar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .aud-reaction .ar-avatar {
+    width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+    border: 1px solid #333; background: #222;
+  }
+  .aud-reaction .ar-avatar-placeholder {
+    width: 28px; height: 28px; border-radius: 50%; background: #222;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; border: 1px solid #333;
+  }
+  .aud-reaction .ar-name { font-size: 12px; color: #50e0b0; font-weight: 700; }
+  .aud-reaction .ar-topic { font-size: 11px; color: #555; margin-left: auto; }
+  .aud-reaction .ar-text { font-size: 13px; color: #aaa; line-height: 1.5; }
+  .aud-counter { font-size: 11px; color: #50e0b0; margin-left: auto; }
 
   .hot-section {
     max-width: 600px;
@@ -1278,7 +1298,9 @@
     <div class="auditorium-title">
       🧑‍⚖️ 旁听席
       <span class="aud-badge">A2A</span>
+      <span class="aud-counter" id="audCounter"></span>
     </div>
+    <div id="audReactions" class="aud-reactions"></div>
     <div class="auditorium-placeholder" id="auditoriumContent">
       <div class="ap-text">你的 <em>Second Me</em> 分身如何看待这些争论？<br>登录后，分身将自动旁听每场辩论并发表看法。</div>
       <div class="ap-btn" id="auditoriumLogin">连接 Second Me →</div>
@@ -1976,6 +1998,45 @@ $('secondmeLogin').addEventListener('click', () => {
 $('auditoriumLogin').addEventListener('click', () => {
   window.location.href = '/api/auth/login';
 });
+
+// Load auditorium reactions
+async function loadAuditorium() {
+  try {
+    const resp = await fetch('/api/auditorium');
+    const data = await resp.json();
+    const reactions = data.reactions || [];
+
+    if (!reactions.length) {
+      $('audCounter').textContent = '';
+      $('audReactions').innerHTML = '';
+      return;
+    }
+
+    $('audCounter').textContent = `${reactions.length} 条发言`;
+    // Simplify placeholder to a compact CTA when reactions exist
+    $('auditoriumContent').querySelector('.ap-text').textContent = '你的分身也来说两句？';
+    $('auditoriumContent').style.padding = '10px';
+
+    $('audReactions').innerHTML = reactions.slice(0, 10).map(r => {
+      const avatarEl = r.user_avatar
+        ? `<img class="ar-avatar" src="${r.user_avatar}" alt="">`
+        : `<div class="ar-avatar-placeholder">🧑‍💻</div>`;
+      const topicShort = (r.topic || '').length > 15 ? r.topic.slice(0, 15) + '…' : r.topic;
+      return `
+        <div class="aud-reaction">
+          <div class="ar-header">
+            ${avatarEl}
+            <span class="ar-name">${r.user_name || '匿名分身'}</span>
+            <span class="ar-topic">关于「${topicShort}」</span>
+          </div>
+          <div class="ar-text">${r.reaction || ''}</div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    // Auditorium is optional
+  }
+}
+loadAuditorium();
 
 // Courtroom: click to advance
 document.addEventListener('click', (e) => {

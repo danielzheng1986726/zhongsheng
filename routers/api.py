@@ -77,6 +77,13 @@ async def theater():
     return {"debates": items, "total": len(debate.completed_debates)}
 
 
+@router.get("/auditorium")
+async def auditorium():
+    """Return Second Me agent reactions from the auditorium (most recent first)."""
+    items = list(reversed(debate.auditorium_reactions[-50:]))
+    return {"reactions": items, "total": len(debate.auditorium_reactions)}
+
+
 @router.post("/secondme/memory")
 async def write_memory(request: Request):
     """Write debate result to user's Second Me agent memory."""
@@ -127,14 +134,16 @@ async def seed_debates(request: Request):
     if not items:
         return {"error": "hotlist empty"}
 
-    # Pick top N items that have answers (more context = better debates)
+    # Pick top N items, skipping topics already in theater
+    existing = {d["topic"] for d in debate.completed_debates}
     targets = []
-    for item in items[:10]:
+    for item in items[:20]:
         if len(targets) >= count:
             break
         title = item.get("title") or item.get("question", "")
-        if title:
+        if title and title not in existing:
             targets.append({"title": title, "answers": item.get("answers", [])})
+            existing.add(title)
 
     async def _run_debate(title: str, answers: list):
         try:
