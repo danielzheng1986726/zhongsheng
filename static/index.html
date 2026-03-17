@@ -1057,6 +1057,21 @@
     padding: 0 20px;
   }
 
+  .zhihu-source-link {
+    display: inline-block;
+    color: #4a90d9;
+    font-size: 14px;
+    text-decoration: none;
+    padding: 8px 20px;
+    border: 1px solid rgba(74, 144, 217, 0.3);
+    border-radius: 4px;
+    margin-bottom: 24px;
+    transition: background 0.2s, border-color 0.2s;
+    opacity: 0;
+    animation: cardReveal 0.6s 1.8s forwards;
+  }
+  .zhihu-source-link:hover { background: rgba(74, 144, 217, 0.1); border-color: #4a90d9; }
+
   /* Action buttons */
   .action-buttons {
     display: flex;
@@ -1136,10 +1151,10 @@
 
   /* ============ Sound Toggle ============ */
   .sound-toggle {
-    position: fixed;
+    position: absolute;
     top: 16px;
     right: 16px;
-    z-index: 500;
+    z-index: 20;
     width: 40px;
     height: 40px;
     border-radius: 2px;
@@ -1277,9 +1292,6 @@
 </head>
 <body>
 
-<!-- Sound Toggle -->
-<button class="sound-toggle" id="soundToggle" title="音效开关">🔊</button>
-
 <!-- ============ Navigation Page ============ -->
 <div class="nav-page" id="navPage">
   <div class="nav-header">
@@ -1389,6 +1401,7 @@
 
 <!-- ============ Main Courtroom ============ -->
 <div class="courtroom" id="courtroom">
+  <button class="sound-toggle" id="soundToggle" title="音效开关">🔊</button>
   <div class="court-bg"></div>
   <div class="speed-lines" id="speedLines"></div>
   <div class="progress" id="progress"></div>
@@ -1445,6 +1458,10 @@
   </div>
 
   <div class="warmth-msg" id="warmthMsg"></div>
+
+  <a class="zhihu-source-link" id="zhihuSourceLink" href="#" target="_blank" rel="noopener" style="display:none">
+    📖 查看知乎原始讨论 →
+  </a>
 
   <div class="action-buttons">
     <button class="action-btn" id="btnPoster">
@@ -1503,6 +1520,7 @@
 let CHARS = {};
 let SCRIPT = [];
 let debateTopic = '';
+let debateZhihuUrl = '';
 let consensusData = [];
 let goldenQuote = '';
 let warmthMessage = '';
@@ -1565,6 +1583,7 @@ $('soundToggle').addEventListener('click', (e) => {
 // --- Loading sequence (SSE-powered) ---
 async function startLoading(topic, itemData, url) {
   debateTopic = topic;
+  debateZhihuUrl = (itemData && itemData.link_url) || url || '';
   $('loadingTitle').textContent = `「${topic}」`;
   $('navPage').classList.add('hidden');
   $('loadingPage').classList.add('active');
@@ -1691,6 +1710,15 @@ function renderConsensus() {
 
   // Warmth message
   $('warmthMsg').textContent = warmthMessage.replace(/<[^>]*>/g, '');
+
+  // Zhihu source link
+  const srcLink = $('zhihuSourceLink');
+  if (debateZhihuUrl) {
+    srcLink.href = debateZhihuUrl;
+    srcLink.style.display = '';
+  } else {
+    srcLink.style.display = 'none';
+  }
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
