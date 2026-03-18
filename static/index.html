@@ -722,6 +722,15 @@
     position: relative;
     overflow: hidden;
   }
+  .court-exit-btn {
+    position: absolute; top: 12px; left: 12px; z-index: 50;
+    background: rgba(0,0,0,0.6); border: 1px solid #333;
+    color: #aaa; font-size: 20px; width: 40px; height: 40px;
+    border-radius: 50%; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: all 0.2s; line-height: 1;
+  }
+  .court-exit-btn:hover { background: rgba(230,0,46,0.3); color: #fff; border-color: #e6002e; }
 
   .court-bg {
     position: absolute;
@@ -1729,6 +1738,7 @@
 
 <!-- ============ Main Courtroom ============ -->
 <div class="courtroom" id="courtroom">
+  <button class="court-exit-btn" id="courtExitBtn" title="离开法庭">🚪</button>
   <button class="sound-toggle" id="soundToggle" title="音效开关">🔊</button>
   <div class="court-bg"></div>
   <div class="speed-lines" id="speedLines"></div>
@@ -1968,7 +1978,7 @@ async function replayDebate(debateId, topic) {
 // --- Loading sequence (SSE-powered) ---
 async function startLoading(topic, itemData, url) {
   debateTopic = topic;
-  debateZhihuUrl = (itemData && itemData.link_url) || url || '';
+  debateZhihuUrl = (itemData && itemData.link_url) || url || `https://www.zhihu.com/search?type=content&q=${encodeURIComponent(topic)}`;
   $('loadingTitle').textContent = `「${topic}」`;
   $('navPage').classList.add('hidden');
   $('loadingPage').classList.add('active');
@@ -2981,13 +2991,22 @@ $('btnMemory').addEventListener('click', async (e) => {
 });
 
 // Results: restart
-$('restartBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
+function exitCourtroom() {
   $('consensusCard').classList.remove('active');
   $('navPage').classList.remove('hidden');
   currentStep = 0;
   hideChar('left');
   hideChar('right');
+}
+
+$('restartBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  exitCourtroom();
+});
+
+$('courtExitBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  exitCourtroom();
 });
 $('nextCaseBtn').addEventListener('click', (e) => {
   e.stopPropagation();
