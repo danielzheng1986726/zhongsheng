@@ -1676,6 +1676,49 @@ $('soundToggle').addEventListener('click', (e) => {
   $('soundToggle').classList.toggle('muted', !soundEnabled);
 });
 
+// --- Replay an existing debate (no regeneration) ---
+async function replayDebate(debateId, topic) {
+  try {
+    $('navPage').classList.add('hidden');
+    $('loadingPage').classList.add('active');
+    $('loadingTitle').textContent = `「${topic || '加载中...'}」`;
+
+    const resp = await fetch(`/api/debate/${debateId}/replay`);
+    const data = await resp.json();
+    if (!data.ok) {
+      // Replay not available, fall back to regeneration
+      $('loadingPage').classList.remove('active');
+      $('navPage').classList.remove('hidden');
+      currentHotlistIndex = -1;
+      startLoading(topic);
+      return;
+    }
+
+    SCRIPT = data.script;
+    CHARS = data.chars;
+    currentDebateId = data.debate_id || debateId;
+    debateTopic = data.topic || topic;
+    consensusData = data.consensus_items || [];
+    goldenQuote = data.golden_quote || '';
+    warmthMessage = data.warmth_message || '';
+    debateZhihuUrl = '';
+
+    renderConsensus();
+    initInteraction();
+
+    await sleep(300);
+    $('loadingPage').classList.remove('active');
+    initProgress();
+    currentStep = 0;
+    executeStep(0);
+  } catch (e) {
+    console.error('Replay failed:', e);
+    $('loadingPage').classList.remove('active');
+    $('navPage').classList.remove('hidden');
+    showToast('❌', '回放加载失败', '');
+  }
+}
+
 // --- Loading sequence (SSE-powered) ---
 async function startLoading(topic, itemData, url) {
   debateTopic = topic;
@@ -2210,11 +2253,14 @@ async function loadTheater() {
       });
     });
 
-    // Click theater card → start debate on that topic
+    // Click theater card → replay existing debate (or fall back to regenerate)
     $('theaterScroll').querySelectorAll('.theater-card').forEach(card => {
       card.addEventListener('click', () => {
+        const id = card.dataset.id;
         const topic = card.dataset.topic;
-        if (topic) {
+        if (id) {
+          replayDebate(id, topic);
+        } else if (topic) {
           currentHotlistIndex = -1;
           startLoading(topic);
         }
