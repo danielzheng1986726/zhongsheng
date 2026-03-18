@@ -7,7 +7,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 from itsdangerous import URLSafeTimedSerializer
 
-from services import secondme
+from services import secondme, database
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -74,12 +74,20 @@ async def callback(request: Request, code: str = ""):
 
         user_info = await secondme.get_user_info(access_token)
 
+        user_name = user_info.get("name", "用户")
+        user_avatar = user_info.get("avatar", "")
+
         session = {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "user_name": user_info.get("name", "用户"),
-            "user_avatar": user_info.get("avatar", ""),
+            "user_name": user_name,
+            "user_avatar": user_avatar,
         }
+
+        # Persist user tokens to DB for background agent comments
+        if database.is_enabled():
+            database.upsert_user(user_name, user_avatar, access_token, refresh_token)
+            database.sync()
 
         response = RedirectResponse("/")
         _set_session(response, session)
