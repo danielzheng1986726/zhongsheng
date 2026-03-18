@@ -73,8 +73,13 @@ async def feed():
 
 @router.get("/theater")
 async def theater():
-    """Return completed debates from in-memory history (most recent first)."""
-    items = list(reversed(debate.completed_debates[-20:]))
+    """Return completed debates from in-memory history (most recent first).
+    Strips heavy fields (script/chars) to keep the response lightweight."""
+    HEAVY = {"script", "chars", "consensus_items"}
+    items = [
+        {k: v for k, v in d.items() if k not in HEAVY}
+        for d in reversed(debate.completed_debates[-20:])
+    ]
     return {"debates": items, "total": len(debate.completed_debates)}
 
 
@@ -99,6 +104,38 @@ async def get_debate(debate_id: str):
     }
 
 
+@router.get("/debate/{debate_id}/replay")
+async def replay_debate(debate_id: str):
+    """Return full replay data (script, chars, consensus) for a completed debate."""
+    # Try in-memory first (has script/chars if still loaded)
+    entry = debate.find_debate(debate_id)
+    if entry and entry.get("script"):
+        return {
+            "ok": True,
+            "debate_id": debate_id,
+            "topic": entry.get("topic", ""),
+            "script": entry["script"],
+            "chars": entry.get("chars", {}),
+            "consensus_items": entry.get("consensus_items", []),
+            "golden_quote": entry.get("golden_quote", ""),
+            "warmth_message": entry.get("warmth_message", ""),
+            "likes": entry.get("likes", 0),
+            "comments": entry.get("comments", []),
+        }
+    # Fall back to disk
+    replay = debate.load_replay(debate_id)
+    if replay:
+        likes = entry.get("likes", 0) if entry else 0
+        comments = entry.get("comments", []) if entry else []
+        return {
+            "ok": True,
+            **replay,
+            "likes": likes,
+            "comments": comments,
+        }
+    return {"error": "replay not found"}
+
+
 @router.post("/debate/{debate_id}/like")
 async def like_debate(debate_id: str):
     """Increment like count for a debate. Syncs to Zhihu circle if pin_token exists."""
@@ -107,6 +144,7 @@ async def like_debate(debate_id: str):
         return {"error": "debate not found"}
 
     entry["likes"] = entry.get("likes", 0) + 1
+    debate.save_debates()
 
     pin_token = entry.get("pin_token")
     if pin_token:
@@ -138,6 +176,7 @@ async def comment_debate(debate_id: str, request: Request):
     if "comments" not in entry:
         entry["comments"] = []
     entry["comments"].append(comment)
+    debate.save_debates()
 
     pin_token = entry.get("pin_token")
     if pin_token:

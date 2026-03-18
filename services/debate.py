@@ -11,15 +11,69 @@ import os
 import re
 import time
 import uuid
+from pathlib import Path
 from services import llm, secondme, zhihu
 
 log = logging.getLogger("debate")
 
-# In-memory completed debate history (survives until process restart)
+DEBATES_FILE = Path(__file__).parent.parent / "zhihu_cache" / "debates.json"
+
+# In-memory completed debate history, persisted to DEBATES_FILE
 completed_debates: list[dict] = []
 
 # In-memory auditorium reactions from Second Me agents
 auditorium_reactions: list[dict] = []
+
+
+def _load_debates():
+    """Load completed debates from disk on startup."""
+    global completed_debates
+    if DEBATES_FILE.exists():
+        try:
+            data = json.loads(DEBATES_FILE.read_text())
+            completed_debates = data if isinstance(data, list) else []
+            log.info("Loaded %d debates from disk", len(completed_debates))
+        except Exception as e:
+            log.warning("Failed to load debates from disk: %s", e)
+
+
+def save_debates():
+    """Persist completed debates to disk. Strips full script/chars to keep file small
+    unless explicitly stored (replay data lives in per-debate files)."""
+    try:
+        DEBATES_FILE.parent.mkdir(exist_ok=True)
+        # Save a lightweight index (no script/chars — those go in per-debate files)
+        index = []
+        for d in completed_debates:
+            entry = {k: v for k, v in d.items() if k not in ("script", "chars")}
+            entry["has_replay"] = bool(d.get("script"))
+            index.append(entry)
+        DEBATES_FILE.write_text(json.dumps(index, ensure_ascii=False))
+    except Exception as e:
+        log.warning("Failed to save debates to disk: %s", e)
+
+
+def _save_replay(debate_id: str, payload: dict):
+    """Save full replay data (script, chars, consensus) to a per-debate file."""
+    try:
+        p = DEBATES_FILE.parent / f"debate_{debate_id}.json"
+        p.write_text(json.dumps(payload, ensure_ascii=False))
+    except Exception as e:
+        log.warning("Failed to save replay for %s: %s", debate_id, e)
+
+
+def load_replay(debate_id: str) -> dict | None:
+    """Load full replay data for a debate."""
+    p = DEBATES_FILE.parent / f"debate_{debate_id}.json"
+    if p.exists():
+        try:
+            return json.loads(p.read_text())
+        except Exception:
+            pass
+    return None
+
+
+_load_debates()
 
 
 def find_debate(debate_id: str) -> dict | None:
@@ -383,7 +437,22 @@ async def generate(
         "likes": 0,
         "comments": [],
         "pin_token": None,
+        "script": script,
+        "chars": chars,
+        "consensus_items": consensus_items,
     })
+
+    # Persist: save replay file + update index
+    _save_replay(debate_id, {
+        "debate_id": debate_id,
+        "topic": topic,
+        "script": script,
+        "chars": chars,
+        "consensus_items": consensus_items,
+        "golden_quote": golden_quote or "",
+        "warmth_message": re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else "",
+    })
+    save_debates()
 
     # Publish to Zhihu circle only when explicitly requested (e.g. seed)
     if auto_publish:
@@ -415,6 +484,7 @@ async def _publish_to_circle(content: str, cache_key: str, debate_id: str = ""):
                 entry = find_debate(debate_id)
                 if entry:
                     entry["pin_token"] = pin_token
+                    save_debates()
                     log.info("Saved pin_token for debate %s", debate_id)
         else:
             log.warning("Circle publish failed: %s", result)
