@@ -141,8 +141,8 @@
     top: 100%;
     left: 20px;
     right: 80px;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    background: #0e0e0e;
+    border: 1px solid #e6002e33;
     border-top: none;
     z-index: 100;
     max-height: 320px;
@@ -153,11 +153,12 @@
   .search-dropdown-item {
     padding: 12px 16px;
     cursor: pointer;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid #1a1a1a;
     transition: background 0.15s;
   }
   .search-dropdown-item:hover, .search-dropdown-item.active {
-    background: #2a2a2a;
+    background: #1a0a0a;
+    border-left: 2px solid #e6002e;
   }
   .search-dropdown-item .sdi-title {
     color: #ddd;
@@ -165,7 +166,7 @@
     line-height: 1.4;
   }
   .search-dropdown-item .sdi-meta {
-    color: #666;
+    color: #555;
     font-size: 12px;
     margin-top: 2px;
   }
@@ -376,14 +377,25 @@
     font-family: inherit; transition: all 0.2s;
   }
   .plaza-send-btn:hover { background: rgba(230,0,46,0.2); }
-  .plaza-agent-btn {
-    background: rgba(80,224,176,0.08); border: 1px solid rgba(80,224,176,0.25);
-    color: #50e0b0; padding: 6px 14px; border-radius: 3px;
-    font-size: 12px; font-weight: 700; cursor: pointer;
-    font-family: inherit; transition: all 0.2s; display: none;
+  .plaza-send-btn, .plaza-agent-toggle { font-size: 12px; padding: 6px 14px; }
+  /* Agent toggle switch */
+  .plaza-agent-toggle {
+    display: none; align-items: center; gap: 6px; cursor: pointer;
+    color: #555; font-size: 12px; font-weight: 500; user-select: none;
   }
-  .plaza-agent-btn:hover { background: rgba(80,224,176,0.15); }
-  .plaza-agent-btn.visible { display: inline-block; }
+  .plaza-agent-toggle.visible { display: flex; }
+  .agent-switch {
+    width: 32px; height: 18px; background: #222; border-radius: 9px;
+    position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .agent-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; background: #555; border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .plaza-agent-toggle.on .agent-switch { background: #50e0b0; }
+  .plaza-agent-toggle.on .agent-switch::after { left: 16px; background: #fff; }
+  .plaza-agent-toggle.on { color: #50e0b0; }
   .feed-list { display: flex; flex-direction: column; gap: 10px; }
 
   /* Feed item: topic (hotlist) */
@@ -1639,7 +1651,7 @@
 
   <!-- URL input -->
   <div class="url-input-area">
-    <input class="url-input" id="urlInput" type="text" placeholder="搜索知乎话题，如「躺平」「考研」「买房」" autocomplete="off" />
+    <input class="url-input" id="urlInput" type="text" placeholder="搜索知乎话题，如 躺平、考研" autocomplete="off" />
     <button class="url-submit" id="urlSubmit">搜索</button>
     <div class="search-dropdown" id="searchDropdown"></div>
   </div>
@@ -1656,7 +1668,10 @@
           <div class="plaza-compose-actions">
             <select id="plazaTopicSelect"><option value="">💬 自由发言</option></select>
             <button class="plaza-send-btn" id="plazaSendBtn">发表</button>
-            <button class="plaza-agent-btn" id="plazaAgentBtn">🤖 用分身评论</button>
+            <div class="plaza-agent-toggle" id="plazaAgentToggle">
+              <div class="agent-switch"></div>
+              <span>分身代言</span>
+            </div>
           </div>
         </div>
         <div class="feed-list" id="feedList"></div>
@@ -2760,6 +2775,18 @@ $('plazaSendBtn').addEventListener('click', async () => {
   const text = $('plazaInput').value.trim();
   if (!text) return;
   $('plazaSendBtn').disabled = true;
+
+  // If agent toggle is on, comment was already saved by API — just refresh
+  if (_agentToggleOn) {
+    $('plazaInput').value = '';
+    $('plazaInput').placeholder = '说点什么…随便聊聊也行';
+    _agentToggleOn = false;
+    $('plazaAgentToggle').classList.remove('on');
+    await loadFeed();
+    $('plazaSendBtn').disabled = false;
+    return;
+  }
+
   try {
     if (debateId) {
       await fetch(`/api/debate/${debateId}/comment`, {
@@ -2786,31 +2813,63 @@ $('plazaInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') $('plazaSendBtn').click();
 });
 
-$('plazaAgentBtn').addEventListener('click', async () => {
-  const debateId = $('plazaTopicSelect').value;
-  if (!debateId) { alert('分身评论需要选择一个辩论话题作为上下文'); return; }
-  const btn = $('plazaAgentBtn');
-  btn.disabled = true;
-  btn.textContent = '🤖 分身思考中…';
-  try {
-    const resp = await fetch('/api/plaza/agent-comment', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ debate_id: debateId }),
-    });
-    const data = await resp.json();
-    if (data.error) { alert('分身评论失败：' + data.error); return; }
-    await loadFeed();
-  } catch (e) {
-    alert('分身评论失败');
+// Agent toggle: click to turn on/off, then auto-generate when on
+let _agentToggleOn = false;
+$('plazaAgentToggle').addEventListener('click', async () => {
+  const toggle = $('plazaAgentToggle');
+  _agentToggleOn = !_agentToggleOn;
+  toggle.classList.toggle('on', _agentToggleOn);
+
+  if (_agentToggleOn) {
+    const debateId = $('plazaTopicSelect').value;
+    if (!debateId) {
+      showToast('💡', '请先选择一个辩论话题', '分身需要辩论上下文才能发言');
+      _agentToggleOn = false;
+      toggle.classList.remove('on');
+      return;
+    }
+    // Show typing state in input
+    const input = $('plazaInput');
+    input.disabled = true;
+    input.value = '';
+    input.placeholder = '你的 AI 分身正在思考中…';
+    try {
+      const resp = await fetch('/api/plaza/agent-comment', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ debate_id: debateId }),
+      });
+      const data = await resp.json();
+      if (data.error) {
+        showToast('❌', '分身评论失败', data.error);
+      } else {
+        // Fill the input with agent's comment for user to review
+        input.value = data.comment?.text || '';
+        input.placeholder = '分身已拟好评论，点「发表」确认';
+        showToast('🤖', '分身评论已生成', '确认后点击发表', 2000);
+        // Don't auto-submit — let user review and click 发表
+        input.disabled = false;
+        return;
+      }
+    } catch (e) {
+      showToast('❌', '分身评论失败', '');
+    }
+    // Reset on failure
+    input.disabled = false;
+    input.placeholder = '说点什么…随便聊聊也行';
+    _agentToggleOn = false;
+    toggle.classList.remove('on');
+  } else {
+    // Turn off: reset input
+    const input = $('plazaInput');
+    input.disabled = false;
+    input.placeholder = '说点什么…随便聊聊也行';
   }
-  btn.disabled = false;
-  btn.textContent = '🤖 用分身评论';
 });
 
 function updatePlazaAgentBtn() {
   const logged = !!window._secondMeSession;
-  $('plazaAgentBtn').classList.toggle('visible', logged);
+  $('plazaAgentToggle').classList.toggle('visible', logged);
 }
 updatePlazaAgentBtn();
 
