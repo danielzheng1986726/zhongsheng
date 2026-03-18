@@ -1404,6 +1404,128 @@
   .poster-overlay .poster-btn:hover { background: rgba(255,255,255,0.2); }
   .poster-overlay .poster-hint { font-size: 12px; color: rgba(255,255,255,0.4); }
 
+  /* ============ Login Gate ============ */
+  .login-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0a0a0a;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 40px 20px;
+    transition: opacity 0.5s;
+  }
+  .login-gate.hidden { opacity: 0; pointer-events: none; }
+  .login-gate-logo {
+    font-size: 72px; font-weight: 900; letter-spacing: 20px;
+    color: #fff; text-shadow: 4px 4px 0 #e6002e;
+    transform: skewX(-4deg); margin-bottom: 8px;
+  }
+  .login-gate-subtitle {
+    font-size: 14px; color: #e6002e; letter-spacing: 6px;
+    font-weight: 700; transform: skewX(-4deg); margin-bottom: 40px;
+  }
+  .login-gate-mascot {
+    width: 100px; height: auto; margin-bottom: 24px;
+    filter: drop-shadow(0 0 20px rgba(230,0,46,0.4));
+  }
+  .login-gate-desc {
+    font-size: 16px; color: #888; line-height: 1.8;
+    max-width: 400px; margin-bottom: 36px;
+  }
+  .login-gate-desc em { color: #fff; font-style: normal; font-weight: 700; }
+  .login-gate-btn {
+    background: #e6002e; border: none; color: #fff;
+    padding: 16px 48px; border-radius: 4px;
+    font-size: 18px; font-weight: 900; cursor: pointer;
+    letter-spacing: 4px; transform: skewX(-4deg);
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(230,0,46,0.4);
+  }
+  .login-gate-btn:hover {
+    transform: skewX(-4deg) scale(1.05);
+    box-shadow: 0 6px 30px rgba(230,0,46,0.6);
+  }
+  .login-gate-hint {
+    font-size: 12px; color: #444; margin-top: 16px;
+  }
+
+  /* ============ Desktop Two-Column Layout ============ */
+  .desktop-layout {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .main-column { flex: 1; min-width: 0; }
+  .sidebar { display: none; }
+
+  @media (min-width: 900px) {
+    .nav-header { padding-top: 48px; }
+    .kanshan-guide { max-width: 720px; }
+    .url-input-area { max-width: 720px; }
+
+    .desktop-layout {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+    }
+    .main-column .feed-section {
+      max-width: none;
+      margin: 0;
+      padding: 0 0 24px;
+    }
+    .sidebar {
+      display: block;
+      width: 300px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 20px;
+    }
+  }
+
+  /* Sidebar hotlist styles */
+  .sidebar-hotlist {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .sidebar-hotlist-title {
+    font-size: 13px; font-weight: 700; color: #888;
+    letter-spacing: 2px; padding: 14px 16px 10px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .sidebar-hotlist-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer; transition: background 0.15s;
+    border-bottom: 1px solid rgba(26,26,26,0.5);
+  }
+  .sidebar-hotlist-item:last-child { border-bottom: none; }
+  .sidebar-hotlist-item:hover { background: rgba(230,0,46,0.04); }
+  .sidebar-hotlist-rank {
+    font-size: 14px; font-weight: 900; color: #e6002e;
+    width: 20px; text-align: center; flex-shrink: 0;
+    line-height: 1.4;
+  }
+  .sidebar-hotlist-rank.top3 { color: #e6002e; }
+  .sidebar-hotlist-rank.normal { color: #555; }
+  .sidebar-hotlist-info { flex: 1; min-width: 0; }
+  .sidebar-hotlist-name {
+    font-size: 13px; color: #ddd; font-weight: 700;
+    line-height: 1.4; margin-bottom: 4px;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .sidebar-hotlist-meta {
+    font-size: 11px; color: #555;
+  }
+  .sidebar-hotlist-meta .heat { color: #e6002e; }
+  .sidebar-hotlist-cta {
+    font-size: 10px; color: #e6002e; font-weight: 700;
+    opacity: 0; transition: opacity 0.15s;
+    flex-shrink: 0; align-self: center;
+  }
+  .sidebar-hotlist-item:hover .sidebar-hotlist-cta { opacity: 1; }
+
   /* ============ Mobile Responsive ============ */
   @media (max-width: 480px) {
     /* Courtroom character cards — shrink to fit side by side */
@@ -1443,6 +1565,20 @@
 </head>
 <body>
 
+<!-- ============ Login Gate ============ -->
+<div class="login-gate" id="loginGate">
+  <div class="login-gate-logo">众 声</div>
+  <div class="login-gate-subtitle">VOICES — 知乎讨论理解地图</div>
+  <img class="login-gate-mascot" src="/img/kanshan-front.png" alt="刘看山">
+  <div class="login-gate-desc">
+    AI 分析知乎热门讨论，提炼对立观点，<br>
+    在<em>模拟法庭</em>里上演辩论。<br>
+    让你的 <em>Second Me 分身</em>出庭旁听。
+  </div>
+  <button class="login-gate-btn" onclick="window.location.href='/api/auth/login'">用 Second Me 登录</button>
+  <div class="login-gate-hint">需要 Second Me 账号 · 授权后即可体验</div>
+</div>
+
 <!-- ============ Navigation Page ============ -->
 <div class="nav-page" id="navPage">
   <div class="nav-header">
@@ -1466,19 +1602,27 @@
     <button class="url-submit" id="urlSubmit">分析</button>
   </div>
 
-  <!-- Unified Feed -->
-  <div class="feed-section" id="feedSection">
-    <div class="feed-compose" id="plazaCompose">
-      <div class="plaza-compose-row">
-        <input type="text" id="plazaInput" placeholder="说点什么…随便聊聊也行" maxlength="200" />
-      </div>
-      <div class="plaza-compose-actions">
-        <select id="plazaTopicSelect"><option value="">💬 自由发言</option></select>
-        <button class="plaza-send-btn" id="plazaSendBtn">发表</button>
-        <button class="plaza-agent-btn" id="plazaAgentBtn">🤖 用分身评论</button>
+  <!-- Desktop two-column layout -->
+  <div class="desktop-layout">
+    <div class="main-column">
+      <!-- Unified Feed -->
+      <div class="feed-section" id="feedSection">
+        <div class="feed-compose" id="plazaCompose">
+          <div class="plaza-compose-row">
+            <input type="text" id="plazaInput" placeholder="说点什么…随便聊聊也行" maxlength="200" />
+          </div>
+          <div class="plaza-compose-actions">
+            <select id="plazaTopicSelect"><option value="">💬 自由发言</option></select>
+            <button class="plaza-send-btn" id="plazaSendBtn">发表</button>
+            <button class="plaza-agent-btn" id="plazaAgentBtn">🤖 用分身评论</button>
+          </div>
+        </div>
+        <div class="feed-list" id="feedList"></div>
       </div>
     </div>
-    <div class="feed-list" id="feedList"></div>
+    <div class="sidebar">
+      <div class="sidebar-hotlist" id="sidebarHotlist"></div>
+    </div>
   </div>
 
   <!-- SecondMe bar -->
@@ -2244,17 +2388,57 @@ async function loadFeed() {
       }
     });
 
-    list.innerHTML = feed.map(item => {
+    const isDesktop = window.innerWidth >= 900;
+    const topics = feed.filter(i => i.feed_type === 'topic');
+    const mainFeed = isDesktop ? feed.filter(i => i.feed_type !== 'topic') : feed;
+
+    list.innerHTML = mainFeed.map(item => {
       if (item.feed_type === 'debate') return _renderDebateCard(item);
       if (item.feed_type === 'topic') return _renderTopicCard(item);
       if (item.feed_type === 'comment') return _renderCommentCard(item);
       return '';
     }).join('');
 
+    if (isDesktop && topics.length) {
+      _renderSidebarHotlist(topics);
+    }
+
     _bindFeedEvents();
   } catch (e) {
     list.innerHTML = '<div style="color:#666;text-align:center;padding:20px">加载失败，请刷新</div>';
   }
+}
+
+function _renderSidebarHotlist(topics) {
+  const el = $('sidebarHotlist');
+  if (!el) return;
+  el.innerHTML = '<div class="sidebar-hotlist-title">🔥 知乎热榜</div>' +
+    topics.slice(0, 20).map((t, i) => {
+      const rank = i + 1;
+      const rankClass = rank <= 3 ? 'top3' : 'normal';
+      const heat = t.heat || '';
+      const answers = t.answer_count ? t.answer_count + ' 讨论' : '';
+      const meta = [heat, answers].filter(Boolean).join(' · ');
+      return `<div class="sidebar-hotlist-item" data-idx="${t.idx}" data-topic="${_esc(t.title || '')}">
+        <span class="sidebar-hotlist-rank ${rankClass}">${rank}</span>
+        <div class="sidebar-hotlist-info">
+          <div class="sidebar-hotlist-name">${_esc(t.title || '')}</div>
+          ${meta ? `<div class="sidebar-hotlist-meta">${_esc(meta)}</div>` : ''}
+        </div>
+        <span class="sidebar-hotlist-cta">开庭 →</span>
+      </div>`;
+    }).join('');
+
+  // Bind click events
+  el.querySelectorAll('.sidebar-hotlist-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const topic = item.dataset.topic;
+      const idx = parseInt(item.dataset.idx);
+      const itemData = (window._hotlistItems || [])[idx] || null;
+      currentHotlistIndex = idx;
+      if (topic) startLoading(topic, itemData);
+    });
+  });
 }
 
 function _renderDebateCard(d) {
@@ -2383,7 +2567,7 @@ function _esc(s) {
   const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
 }
 
-loadFeed();
+// Feed loads after auth check (see checkAuth below)
 
 // Nav: URL/topic submit — supports free text, URLs, and "title + URL" combos
 $('urlSubmit').addEventListener('click', () => {
@@ -2410,19 +2594,23 @@ $('urlInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') $('urlSubmit').click();
 });
 
-// Nav: SecondMe login — check session on load
+// Nav: SecondMe login — check session on load, control login gate
 async function checkAuth() {
   try {
     const resp = await fetch('/api/auth/me');
     const data = await resp.json();
     if (data.logged_in) {
+      // Dismiss login gate
+      $('loginGate').classList.add('hidden');
       $('secondmeBar').innerHTML = `
         <div class="secondme-icon">🤖</div>
         <div class="secondme-text">✅ ${data.name} 的 AI 分身已就位 · 辩论中将自动出庭</div>
       `;
       window._secondMeSession = true;
       updatePlazaAgentBtn();
+      loadFeed();
     }
+    // Not logged in → gate stays visible
   } catch (e) {}
 }
 checkAuth();
