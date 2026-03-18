@@ -23,6 +23,28 @@ async def hotlist():
     return {"items": items}
 
 
+@router.get("/search")
+async def search(q: str = ""):
+    """Search Zhihu content by keyword. Returns titles + answer counts."""
+    if not q.strip():
+        return {"results": []}
+    items = await zhihu.search(q.strip(), count=8)
+    results = []
+    for item in items:
+        title = item.get("title", "")
+        # Strip HTML tags from title
+        title = __import__("re").sub(r"<[^>]+>", "", title)
+        title = __import__("re").sub(r"\s*[-–—]\s*知乎\s*$", "", title)
+        if not title:
+            continue
+        results.append({
+            "title": title,
+            "answer_count": item.get("answer_count", 0),
+            "excerpt": (item.get("content_text", "") or item.get("content", ""))[:80],
+        })
+    return {"results": results}
+
+
 @router.post("/debate/generate")
 async def generate_debate(request: Request):
     """Generate a full courtroom debate via SSE.

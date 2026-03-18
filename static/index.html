@@ -118,6 +118,7 @@
     padding: 0 20px;
     display: flex;
     gap: 10px;
+    position: relative;
   }
   .url-input {
     flex: 1;
@@ -134,6 +135,46 @@
   }
   .url-input::placeholder { color: #333; }
   .url-input:focus { border-color: #e6002e; }
+  /* Search dropdown */
+  .search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    right: 80px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-top: none;
+    z-index: 100;
+    max-height: 320px;
+    overflow-y: auto;
+    display: none;
+  }
+  .search-dropdown.visible { display: block; }
+  .search-dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #222;
+    transition: background 0.15s;
+  }
+  .search-dropdown-item:hover, .search-dropdown-item.active {
+    background: #2a2a2a;
+  }
+  .search-dropdown-item .sdi-title {
+    color: #ddd;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .search-dropdown-item .sdi-meta {
+    color: #666;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .search-dropdown-hint {
+    padding: 12px 16px;
+    color: #555;
+    font-size: 13px;
+    text-align: center;
+  }
   .url-submit {
     background: #e6002e;
     border: none;
@@ -1592,14 +1633,15 @@
     <div class="kanshan-bubble">
       <div class="kanshan-name">刘看山 · 审判长</div>
       欢迎来到众声法庭。这里没有输赢，只有<em>被看见的真相</em>。<br>
-      选择一个热门讨论，或粘贴知乎链接，看看争论背后藏着什么。
+      搜索任意知乎话题，或从热榜选一个，看看争论背后藏着什么。
     </div>
   </div>
 
   <!-- URL input -->
   <div class="url-input-area">
-    <input class="url-input" id="urlInput" type="text" placeholder="输入任意讨论话题，如「年轻人该不该躺平」" />
-    <button class="url-submit" id="urlSubmit">分析</button>
+    <input class="url-input" id="urlInput" type="text" placeholder="搜索知乎话题，如「躺平」「考研」「买房」" autocomplete="off" />
+    <button class="url-submit" id="urlSubmit">搜索</button>
+    <div class="search-dropdown" id="searchDropdown"></div>
   </div>
 
   <!-- Desktop two-column layout -->
@@ -2569,20 +2611,82 @@ function _esc(s) {
 
 // Feed loads after auth check (see checkAuth below)
 
-// Nav: URL/topic submit — supports free text, URLs, and "title + URL" combos
+// Nav: Search input — debounced Zhihu search with dropdown
+let _searchTimer = null;
+let _searchResults = [];
+let _searchActiveIdx = -1;
+
+function _showDropdown(html) {
+  const dd = $('searchDropdown');
+  dd.innerHTML = html;
+  dd.classList.add('visible');
+}
+function _hideDropdown() {
+  $('searchDropdown').classList.remove('visible');
+  _searchActiveIdx = -1;
+}
+
+async function _doSearch(query) {
+  if (!query || query.length < 2) { _hideDropdown(); return; }
+  // If it looks like a URL, don't search
+  if (/https?:\/\//.test(query)) { _hideDropdown(); return; }
+  _showDropdown('<div class="search-dropdown-hint">搜索中…</div>');
+  try {
+    const resp = await fetch('/api/search?q=' + encodeURIComponent(query));
+    const data = await resp.json();
+    _searchResults = data.results || [];
+    if (_searchResults.length === 0) {
+      _showDropdown('<div class="search-dropdown-hint">未找到相关话题，按回车直接分析</div>');
+      return;
+    }
+    _searchActiveIdx = -1;
+    const items = _searchResults.map((r, i) =>
+      `<div class="search-dropdown-item" data-idx="${i}">
+        <div class="sdi-title">${r.title}</div>
+        <div class="sdi-meta">${r.answer_count ? r.answer_count + ' 个回答' : ''}${r.excerpt ? ' · ' + r.excerpt : ''}</div>
+      </div>`
+    ).join('');
+    _showDropdown(items);
+    // Bind click events
+    $('searchDropdown').querySelectorAll('.search-dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.idx);
+        _pickSearchResult(idx);
+      });
+    });
+  } catch(e) {
+    _hideDropdown();
+  }
+}
+
+function _pickSearchResult(idx) {
+  const r = _searchResults[idx];
+  if (!r) return;
+  $('urlInput').value = r.title;
+  _hideDropdown();
+  currentHotlistIndex = -1;
+  startLoading(r.title);
+}
+
+$('urlInput').addEventListener('input', () => {
+  clearTimeout(_searchTimer);
+  const q = $('urlInput').value.trim();
+  _searchTimer = setTimeout(() => _doSearch(q), 400);
+});
+
 $('urlSubmit').addEventListener('click', () => {
   const input = $('urlInput').value.trim();
   if (!input) {
     showToast('💡', '请输入一个讨论话题', '');
     return;
   }
+  _hideDropdown();
   currentHotlistIndex = -1;
 
   // Extract URL if present (Zhihu share copies "title\nURL")
   const urlMatch = input.match(/(https?:\/\/[^\s]+)/);
   if (urlMatch) {
     const url = urlMatch[1];
-    // Extract title: everything before the URL, cleaned up
     let title = input.replace(url, '').replace(/[\n\r]+/g, ' ').trim();
     title = title.replace(/\s*[-–—]\s*知乎\s*$/, '').trim();
     startLoading(title || '正在解析讨论...', null, url);
@@ -2590,8 +2694,38 @@ $('urlSubmit').addEventListener('click', () => {
     startLoading(input);
   }
 });
+
 $('urlInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') $('urlSubmit').click();
+  const dd = $('searchDropdown');
+  if (!dd.classList.contains('visible')) {
+    if (e.key === 'Enter') $('urlSubmit').click();
+    return;
+  }
+  const items = dd.querySelectorAll('.search-dropdown-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _searchActiveIdx = Math.min(_searchActiveIdx + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('active', i === _searchActiveIdx));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _searchActiveIdx = Math.max(_searchActiveIdx - 1, -1);
+    items.forEach((el, i) => el.classList.toggle('active', i === _searchActiveIdx));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (_searchActiveIdx >= 0) {
+      _pickSearchResult(_searchActiveIdx);
+    } else {
+      _hideDropdown();
+      $('urlSubmit').click();
+    }
+  } else if (e.key === 'Escape') {
+    _hideDropdown();
+  }
+});
+
+// Hide dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.url-input-area')) _hideDropdown();
 });
 
 // Nav: SecondMe login — check session on load, control login gate
