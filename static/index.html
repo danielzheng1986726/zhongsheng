@@ -2272,19 +2272,24 @@ async function loadTheater() {
 }
 loadTheater();
 
-// Nav: URL/topic submit — supports free text topics
+// Nav: URL/topic submit — supports free text, URLs, and "title + URL" combos
 $('urlSubmit').addEventListener('click', () => {
   const input = $('urlInput').value.trim();
   if (!input) {
     showToast('💡', '请输入一个讨论话题', '');
     return;
   }
-  // If input looks like a URL, show a clean loading title and pass url to backend
-  if (/https?:\/\//.test(input)) {
-    currentHotlistIndex = -1;
-    startLoading('正在解析讨论...', null, input);
+  currentHotlistIndex = -1;
+
+  // Extract URL if present (Zhihu share copies "title\nURL")
+  const urlMatch = input.match(/(https?:\/\/[^\s]+)/);
+  if (urlMatch) {
+    const url = urlMatch[1];
+    // Extract title: everything before the URL, cleaned up
+    let title = input.replace(url, '').replace(/[\n\r]+/g, ' ').trim();
+    title = title.replace(/\s*[-–—]\s*知乎\s*$/, '').trim();
+    startLoading(title || '正在解析讨论...', null, url);
   } else {
-    currentHotlistIndex = -1;
     startLoading(input);
   }
 });
