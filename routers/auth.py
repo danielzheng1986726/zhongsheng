@@ -33,7 +33,7 @@ def _set_session(response: Response, data: dict):
     token = _signer.dumps(data)
     response.set_cookie(
         COOKIE_NAME, token, max_age=MAX_AGE,
-        httponly=True, samesite="lax",
+        httponly=True, samesite="lax", secure=True,
     )
 
 

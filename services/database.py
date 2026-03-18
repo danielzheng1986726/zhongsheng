@@ -64,7 +64,7 @@ def init_db():
             );
             CREATE TABLE IF NOT EXISTS users (
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_name      TEXT NOT NULL,
+                user_name      TEXT NOT NULL UNIQUE,
                 user_avatar    TEXT DEFAULT '',
                 access_token   TEXT NOT NULL,
                 refresh_token  TEXT DEFAULT '',
