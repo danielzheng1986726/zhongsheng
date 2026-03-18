@@ -219,6 +219,88 @@
   .theater-empty .te-text { font-size: 13px; color: #444; line-height: 1.6; }
   .theater-empty .te-hint { font-size: 11px; color: #e6002e; margin-top: 8px; }
 
+  /* ---- Theater card interaction (likes/comments) ---- */
+  .tc-interact {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .tc-interact .tc-like-btn,
+  .tc-interact .tc-comment-count {
+    display: flex; align-items: center; gap: 3px;
+    font-size: 11px; color: #555; cursor: pointer;
+    background: none; border: none; padding: 2px 4px;
+    font-family: inherit; transition: color 0.2s;
+  }
+  .tc-interact .tc-like-btn:hover { color: #e6002e; }
+  .tc-interact .tc-like-btn.liked { color: #e6002e; }
+
+  /* ---- Result page interaction section ---- */
+  .interact-section {
+    max-width: 520px; width: 100%;
+    margin-bottom: 24px; opacity: 0;
+    animation: cardReveal 0.4s 1.5s forwards;
+  }
+  .interact-row {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 16px;
+  }
+  .interact-like-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(230,0,46,0.08); border: 1px solid rgba(230,0,46,0.2);
+    color: #e6002e; font-size: 14px; font-weight: 700;
+    padding: 8px 18px; border-radius: 3px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; transform: skewX(-3deg);
+  }
+  .interact-like-btn:hover { background: rgba(230,0,46,0.15); border-color: #e6002e; }
+  .interact-like-btn.liked {
+    background: rgba(230,0,46,0.2); border-color: #e6002e;
+  }
+  .interact-like-btn .like-count { font-size: 13px; }
+  @keyframes likePop {
+    0% { transform: skewX(-3deg) scale(1); }
+    50% { transform: skewX(-3deg) scale(1.15); }
+    100% { transform: skewX(-3deg) scale(1); }
+  }
+  .interact-like-btn.pop { animation: likePopAnim 0.3s ease; }
+  @keyframes likePopAnim {
+    0% { transform: skewX(-3deg) scale(1); }
+    40% { transform: skewX(-3deg) scale(1.2); }
+    100% { transform: skewX(-3deg) scale(1); }
+  }
+  .comment-input-row {
+    display: flex; gap: 8px; margin-bottom: 12px;
+  }
+  .comment-input-row input {
+    flex: 1; background: #0f0f0f; border: 1px solid #1a1a1a;
+    color: #ccc; padding: 8px 12px; border-radius: 3px;
+    font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color 0.2s;
+  }
+  .comment-input-row input:focus { border-color: #e6002e; }
+  .comment-input-row input::placeholder { color: #333; }
+  .comment-send-btn {
+    background: rgba(230,0,46,0.1); border: 1px solid rgba(230,0,46,0.3);
+    color: #e6002e; padding: 8px 16px; border-radius: 3px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; white-space: nowrap;
+  }
+  .comment-send-btn:hover { background: rgba(230,0,46,0.2); }
+  .comment-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 200px; overflow-y: auto;
+  }
+  .comment-item {
+    background: #0f0f0f; border: 1px solid #1a1a1a;
+    border-left: 3px solid rgba(230,0,46,0.4);
+    border-radius: 3px; padding: 8px 12px;
+  }
+  .comment-item .ci-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .comment-item .ci-nick { font-size: 11px; color: #e6002e; font-weight: 700; }
+  .comment-item .ci-time { font-size: 10px; color: #333; }
+  .comment-item .ci-text { font-size: 13px; color: #aaa; line-height: 1.5; }
+
   /* ---- 旁听席 (Auditorium section) ---- */
   .auditorium-section {
     max-width: 600px;
@@ -1463,6 +1545,19 @@
     📖 查看知乎原始讨论 →
   </a>
 
+  <div class="interact-section" id="interactSection">
+    <div class="interact-row">
+      <button class="interact-like-btn" id="resultLikeBtn">
+        ♥ 为本场辩论点赞 <span class="like-count" id="resultLikeCount">0</span>
+      </button>
+    </div>
+    <div class="comment-input-row">
+      <input type="text" id="commentInput" placeholder="留下你的看法..." maxlength="200">
+      <button class="comment-send-btn" id="commentSendBtn">发送</button>
+    </div>
+    <div class="comment-list" id="commentList"></div>
+  </div>
+
   <div class="action-buttons">
     <button class="action-btn" id="btnPoster">
       <span class="btn-icon">🖼️</span> 生成分享海报
@@ -1521,6 +1616,7 @@ let CHARS = {};
 let SCRIPT = [];
 let debateTopic = '';
 let debateZhihuUrl = '';
+let currentDebateId = '';
 let consensusData = [];
 let goldenQuote = '';
 let warmthMessage = '';
@@ -1649,12 +1745,14 @@ async function startLoading(topic, itemData, url) {
           // Apply data
           SCRIPT = event.script;
           CHARS = event.chars;
+          currentDebateId = event.debate_id || '';
           consensusData = event.consensus_items || [];
           goldenQuote = event.golden_quote || '';
           warmthMessage = event.warmth_message || '';
 
-          // Fill consensus card
+          // Fill consensus card + interaction section
           renderConsensus();
+          initInteraction();
 
           // Mark all steps done
           steps.forEach(id => { $(id).classList.remove('active'); $(id).classList.add('done'); });
@@ -1719,6 +1817,91 @@ function renderConsensus() {
   } else {
     srcLink.style.display = 'none';
   }
+}
+
+// ============ Interaction (like / comment) ============
+
+async function initInteraction() {
+  const likeBtn = $('resultLikeBtn');
+  const countEl = $('resultLikeCount');
+  const commentList = $('commentList');
+
+  // Reset UI
+  countEl.textContent = '0';
+  commentList.innerHTML = '';
+  likeBtn.classList.remove('liked');
+
+  if (!currentDebateId) return;
+
+  if (localStorage.getItem('liked_' + currentDebateId)) {
+    likeBtn.classList.add('liked');
+  }
+
+  // Load existing interaction data from server
+  try {
+    const resp = await fetch(`/api/debate/${currentDebateId}`);
+    const data = await resp.json();
+    if (data.ok) {
+      countEl.textContent = data.likes || 0;
+      (data.comments || []).forEach(c => appendComment(c));
+    }
+  } catch (_) {}
+}
+
+$('resultLikeBtn').addEventListener('click', async () => {
+  if (!currentDebateId) return;
+  const btn = $('resultLikeBtn');
+  if (localStorage.getItem('liked_' + currentDebateId)) return;
+  try {
+    const resp = await fetch(`/api/debate/${currentDebateId}/like`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.ok) {
+      btn.classList.add('liked', 'pop');
+      $('resultLikeCount').textContent = data.likes;
+      localStorage.setItem('liked_' + currentDebateId, '1');
+      setTimeout(() => btn.classList.remove('pop'), 300);
+    }
+  } catch (_) {}
+});
+
+$('commentSendBtn').addEventListener('click', sendComment);
+$('commentInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendComment();
+});
+
+async function sendComment() {
+  if (!currentDebateId) return;
+  const input = $('commentInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  try {
+    const resp = await fetch(`/api/debate/${currentDebateId}/comment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      input.value = '';
+      appendComment(data.comment);
+    }
+  } catch (_) {}
+}
+
+function appendComment(c) {
+  const list = $('commentList');
+  const ts = c.ts ? new Date(c.ts * 1000).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}) : '';
+  const div = document.createElement('div');
+  div.className = 'comment-item';
+  div.innerHTML = `
+    <div class="ci-header">
+      <span class="ci-nick">${(c.nickname || '匿名旁听').replace(/</g, '&lt;')}</span>
+      <span class="ci-time">${ts}</span>
+    </div>
+    <div class="ci-text">${(c.text || '').replace(/</g, '&lt;')}</div>
+  `;
+  list.prepend(div);
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1990,17 +2173,42 @@ async function loadTheater() {
     $('theaterScroll').innerHTML = debates.slice(0, 8).map(d => {
       const topic = d.topic || '';
       const quote = d.golden_quote || '';
+      const did = d.id || '';
+      const likes = d.likes || 0;
+      const cmtCount = (d.comments || []).length;
       const ts = d.ts ? new Date(d.ts * 1000).toLocaleDateString('zh-CN', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+      const isLiked = did && localStorage.getItem('liked_' + did);
       return `
-        <div class="theater-card" data-topic="${topic.replace(/"/g, '&quot;')}">
+        <div class="theater-card" data-topic="${topic.replace(/"/g, '&quot;')}" data-id="${did}">
           <div class="tc-topic">${topic.length > 40 ? topic.slice(0,40) + '…' : topic}</div>
           ${quote ? `<div class="tc-quote">${quote}</div>` : ''}
           <div class="tc-footer">
-            <span>${ts}</span>
-            <span class="tc-cta">点击围观 →</span>
+            <div class="tc-interact">
+              <button class="tc-like-btn${isLiked ? ' liked' : ''}" data-id="${did}">♥ <span>${likes}</span></button>
+              <span class="tc-comment-count">💬 ${cmtCount}</span>
+            </div>
+            <span class="tc-cta">围观 →</span>
           </div>
         </div>`;
     }).join('');
+
+    // Like buttons on theater cards
+    $('theaterScroll').querySelectorAll('.tc-like-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        if (!id || localStorage.getItem('liked_' + id)) return;
+        try {
+          const resp = await fetch(`/api/debate/${id}/like`, { method: 'POST' });
+          const data = await resp.json();
+          if (data.ok) {
+            btn.classList.add('liked');
+            btn.querySelector('span').textContent = data.likes;
+            localStorage.setItem('liked_' + id, '1');
+          }
+        } catch (_) {}
+      });
+    });
 
     // Click theater card → start debate on that topic
     $('theaterScroll').querySelectorAll('.theater-card').forEach(card => {

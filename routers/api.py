@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import time
 
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
@@ -82,6 +83,81 @@ async def auditorium():
     """Return Second Me agent reactions from the auditorium (most recent first)."""
     items = list(reversed(debate.auditorium_reactions[-50:]))
     return {"reactions": items, "total": len(debate.auditorium_reactions)}
+
+
+@router.get("/debate/{debate_id}")
+async def get_debate(debate_id: str):
+    """Return a single debate's data (likes, comments, etc.)."""
+    entry = debate.find_debate(debate_id)
+    if not entry:
+        return {"error": "debate not found"}
+    return {
+        "ok": True,
+        "id": entry.get("id"),
+        "likes": entry.get("likes", 0),
+        "comments": entry.get("comments", []),
+    }
+
+
+@router.post("/debate/{debate_id}/like")
+async def like_debate(debate_id: str):
+    """Increment like count for a debate. Syncs to Zhihu circle if pin_token exists."""
+    entry = debate.find_debate(debate_id)
+    if not entry:
+        return {"error": "debate not found"}
+
+    entry["likes"] = entry.get("likes", 0) + 1
+
+    pin_token = entry.get("pin_token")
+    if pin_token:
+        asyncio.create_task(_sync_like_to_zhihu(pin_token))
+
+    return {"ok": True, "likes": entry["likes"]}
+
+
+@router.post("/debate/{debate_id}/comment")
+async def comment_debate(debate_id: str, request: Request):
+    """Add a comment to a debate. Syncs to Zhihu circle if pin_token exists.
+
+    Body: {"text": "...", "nickname": "匿名旁听"}
+    """
+    entry = debate.find_debate(debate_id)
+    if not entry:
+        return {"error": "debate not found"}
+
+    body = await request.json()
+    text = body.get("text", "").strip()
+    if not text:
+        return {"error": "text is required"}
+
+    comment = {
+        "text": text[:200],
+        "nickname": body.get("nickname", "匿名旁听")[:20],
+        "ts": time.time(),
+    }
+    if "comments" not in entry:
+        entry["comments"] = []
+    entry["comments"].append(comment)
+
+    pin_token = entry.get("pin_token")
+    if pin_token:
+        asyncio.create_task(_sync_comment_to_zhihu(pin_token, text[:200]))
+
+    return {"ok": True, "comment": comment, "total_comments": len(entry["comments"])}
+
+
+async def _sync_like_to_zhihu(pin_token: str):
+    try:
+        await zhihu.react("pin", pin_token, action_value=1)
+    except Exception as e:
+        log.warning("Zhihu like sync failed: %s", e)
+
+
+async def _sync_comment_to_zhihu(pin_token: str, text: str):
+    try:
+        await zhihu.create_comment("pin", pin_token, text)
+    except Exception as e:
+        log.warning("Zhihu comment sync failed: %s", e)
 
 
 @router.post("/secondme/memory")

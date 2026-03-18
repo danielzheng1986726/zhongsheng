@@ -10,17 +10,24 @@ import logging
 import os
 import re
 import time
+import uuid
 from services import llm, secondme, zhihu
 
 log = logging.getLogger("debate")
 
 # In-memory completed debate history (survives until process restart)
-# Each entry: {"topic": str, "golden_quote": str, "warmth_message": str, "ts": float}
 completed_debates: list[dict] = []
 
 # In-memory auditorium reactions from Second Me agents
-# Each entry: {"user_name": str, "user_avatar": str, "reaction": str, "topic": str, "ts": float}
 auditorium_reactions: list[dict] = []
+
+
+def find_debate(debate_id: str) -> dict | None:
+    """Find a completed debate by its ID."""
+    for d in completed_debates:
+        if d.get("id") == debate_id:
+            return d
+    return None
 
 # Models to try, in order.
 # MiniMax-M2.5: hackathon sponsor, $30 voucher — use for lighter prompts (factions)
@@ -352,9 +359,13 @@ async def generate(
 
     yield {"phase": "ready", "message": "准备开庭！"}
 
+    # Record to in-memory history for theater display
+    debate_id = uuid.uuid4().hex[:8]
+
     # Final payload
     yield {
         "phase": "done",
+        "debate_id": debate_id,
         "script": script,
         "chars": chars,
         "consensus_items": consensus_items,
@@ -363,13 +374,15 @@ async def generate(
         "topic": topic,
         "user_char": user_char,
     }
-
-    # Record to in-memory history for theater display
     completed_debates.append({
+        "id": debate_id,
         "topic": topic,
         "golden_quote": golden_quote or "",
         "warmth_message": re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else "",
         "ts": time.time(),
+        "likes": 0,
+        "comments": [],
+        "pin_token": None,
     })
 
     # Publish to Zhihu circle only when explicitly requested (e.g. seed)
@@ -384,18 +397,25 @@ async def generate(
             )
             cache_key = f"_pin_{topic[:30]}"
             if not zhihu._read_cache(cache_key, max_age=3600):
-                asyncio.create_task(_publish_to_circle(pin_content, cache_key))
+                asyncio.create_task(_publish_to_circle(pin_content, cache_key, debate_id))
         except Exception:
             pass
 
 
-async def _publish_to_circle(content: str, cache_key: str):
+async def _publish_to_circle(content: str, cache_key: str, debate_id: str = ""):
     """Background task to publish to circle and cache the result."""
     try:
         result = await zhihu.publish_pin(content)
         if "error" not in result:
             zhihu._write_cache(cache_key, {"published": True})
             log.info("Auto-published to circle: %s", cache_key)
+            # Save pin token back to completed_debates for future reactions
+            pin_token = result.get("data", {}).get("content_token", "")
+            if pin_token and debate_id:
+                entry = find_debate(debate_id)
+                if entry:
+                    entry["pin_token"] = pin_token
+                    log.info("Saved pin_token for debate %s", debate_id)
         else:
             log.warning("Circle publish failed: %s", result)
     except Exception as e:
