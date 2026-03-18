@@ -157,7 +157,7 @@ async def like_debate(debate_id: str):
 async def comment_debate(debate_id: str, request: Request):
     """Add a comment to a debate. Syncs to Zhihu circle if pin_token exists.
 
-    Body: {"text": "...", "nickname": "匿名旁听"}
+    Body: {"text": "...", "nickname": "匿名旁听", "source": "human"|"agent"}
     """
     entry = debate.find_debate(debate_id)
     if not entry:
@@ -171,6 +171,9 @@ async def comment_debate(debate_id: str, request: Request):
     comment = {
         "text": text[:200],
         "nickname": body.get("nickname", "匿名旁听")[:20],
+        "source": body.get("source", "human"),
+        "debate_topic": entry.get("topic", ""),
+        "debate_id": debate_id,
         "ts": time.time(),
     }
     if "comments" not in entry:
@@ -197,6 +200,108 @@ async def _sync_comment_to_zhihu(pin_token: str, text: str):
         await zhihu.create_comment("pin", pin_token, text)
     except Exception as e:
         log.warning("Zhihu comment sync failed: %s", e)
+
+
+@router.get("/plaza")
+async def plaza():
+    """Aggregated activity feed — recent comments across all debates + free comments, newest first."""
+    feed = []
+    for d in debate.completed_debates:
+        topic = d.get("topic", "")
+        did = d.get("id", "")
+        for c in d.get("comments", []):
+            feed.append({**c, "debate_topic": topic, "debate_id": did})
+    # Include auditorium reactions as agent-type entries
+    for r in debate.auditorium_reactions:
+        feed.append({
+            "text": r.get("reaction", ""),
+            "nickname": r.get("user_name", "AI 分身"),
+            "source": "agent",
+            "debate_topic": r.get("topic", ""),
+            "debate_id": "",
+            "ts": r.get("ts", 0),
+        })
+    # Include free plaza comments (not tied to any debate)
+    for c in debate.plaza_comments:
+        feed.append(c)
+    feed.sort(key=lambda x: x.get("ts", 0), reverse=True)
+    return {"feed": feed[:50], "total": len(feed)}
+
+
+@router.post("/plaza/free-comment")
+async def plaza_free_comment(request: Request):
+    """Post a free comment to the plaza (not tied to any debate).
+
+    Body: {"text": "...", "nickname": "匿名旁听"}
+    """
+    body = await request.json()
+    text = body.get("text", "").strip()
+    if not text:
+        return {"error": "text is required"}
+
+    comment = {
+        "text": text[:200],
+        "nickname": body.get("nickname", "匿名旁听")[:20],
+        "source": body.get("source", "human"),
+        "debate_topic": "",
+        "debate_id": "",
+        "ts": time.time(),
+    }
+    debate.plaza_comments.append(comment)
+    debate.save_plaza()
+    return {"ok": True, "comment": comment}
+
+
+@router.post("/plaza/agent-comment")
+async def agent_comment(request: Request):
+    """Generate a comment using the user's Second Me agent and post it.
+
+    Body: {"debate_id": "..."}
+    """
+    session = _get_session(request)
+    if not session:
+        return {"error": "not logged in"}
+
+    body = await request.json()
+    debate_id = body.get("debate_id", "")
+    entry = debate.find_debate(debate_id)
+    if not entry:
+        return {"error": "debate not found"}
+
+    topic = entry.get("topic", "")
+    golden_quote = entry.get("golden_quote", "")
+    access_token = session["access_token"]
+
+    try:
+        user_info = await secondme.get_user_info(access_token)
+        user_name = user_info.get("name", "AI 分身")
+
+        prompt = (
+            f"你在一个叫「众声法庭」的产品里围观了一场关于「{topic}」的辩论。"
+            f"辩论金句是：「{golden_quote}」。"
+            f"请用你自己的口吻，写一句简短的看法或感想（不超过50字）。"
+            f"语气轻松自然，就像在朋友圈评论一样。"
+        )
+        reply = await secondme.chat_full(access_token, prompt)
+        if not reply:
+            return {"error": "agent returned empty response"}
+
+        comment = {
+            "text": reply.strip()[:200],
+            "nickname": user_name,
+            "source": "agent",
+            "debate_topic": topic,
+            "debate_id": debate_id,
+            "ts": time.time(),
+        }
+        if "comments" not in entry:
+            entry["comments"] = []
+        entry["comments"].append(comment)
+        debate.save_debates()
+
+        return {"ok": True, "comment": comment}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @router.post("/secondme/memory")
