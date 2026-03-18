@@ -301,44 +301,33 @@
   .comment-item .ci-time { font-size: 10px; color: #333; }
   .comment-item .ci-text { font-size: 13px; color: #aaa; line-height: 1.5; }
 
-  /* ---- 广场动态 (Plaza section) ---- */
-  .plaza-section {
+  /* ---- Unified Feed ---- */
+  .feed-section {
     max-width: 600px;
     margin: 0 auto;
     padding: 0 20px 24px;
     position: relative;
     z-index: 1;
   }
-  .plaza-title {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 14px; color: #888; letter-spacing: 3px;
-    margin-bottom: 12px; padding-left: 4px; transform: skewX(-2deg);
-    font-weight: 700;
-  }
-  .plaza-counter { font-size: 11px; color: rgba(230,0,46,0.6); margin-left: auto; letter-spacing: 0; }
-  .plaza-compose {
+  .feed-compose {
     background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px;
-    padding: 12px 14px; margin-bottom: 12px;
+    padding: 12px 14px; margin-bottom: 14px;
   }
-  .plaza-compose-row {
-    display: flex; gap: 8px; margin-bottom: 8px;
-  }
+  .plaza-compose-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .plaza-compose select {
     background: #111; border: 1px solid #1a1a1a; color: #888;
     padding: 6px 8px; border-radius: 3px; font-size: 12px;
     font-family: inherit; outline: none; max-width: 160px;
   }
   .plaza-compose select:focus { border-color: #e6002e; }
-  .plaza-compose input {
+  .feed-compose input {
     flex: 1; background: #111; border: 1px solid #1a1a1a;
     color: #ccc; padding: 6px 10px; border-radius: 3px;
     font-size: 13px; font-family: inherit; outline: none;
   }
-  .plaza-compose input:focus { border-color: #e6002e; }
-  .plaza-compose input::placeholder { color: #333; }
-  .plaza-compose-actions {
-    display: flex; align-items: center; gap: 8px;
-  }
+  .feed-compose input:focus { border-color: #e6002e; }
+  .feed-compose input::placeholder { color: #333; }
+  .plaza-compose-actions { display: flex; align-items: center; gap: 8px; }
   .plaza-send-btn {
     background: rgba(230,0,46,0.1); border: 1px solid rgba(230,0,46,0.3);
     color: #e6002e; padding: 6px 14px; border-radius: 3px;
@@ -354,12 +343,72 @@
   }
   .plaza-agent-btn:hover { background: rgba(80,224,176,0.15); }
   .plaza-agent-btn.visible { display: inline-block; }
-  .plaza-feed { display: flex; flex-direction: column; gap: 10px; }
-  .plaza-item {
+  .feed-list { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Feed item: topic (hotlist) */
+  .feed-topic {
+    background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px;
+    padding: 14px 16px; cursor: pointer; transition: border-color 0.2s;
+    position: relative;
+  }
+  .feed-topic:hover { border-color: #e6002e; }
+  .feed-topic .ft-title {
+    font-size: 16px; color: #eee; font-weight: 700; line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .feed-topic .ft-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #555;
+  }
+  .feed-topic .ft-heat { color: #e6002e; }
+  .feed-topic .ft-tag {
+    font-size: 9px; padding: 1px 6px; border-radius: 2px;
+    background: rgba(230,0,46,0.1); color: #e6002e;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+  .feed-topic .ft-cta {
+    margin-left: auto; font-size: 11px; color: #e6002e;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .feed-topic:hover .ft-cta { opacity: 1; }
+
+  /* Feed item: debate (completed) */
+  .feed-debate {
+    background: #0a0a0a; border: 1px solid #1a1a1a; border-left: 3px solid #e6002e;
+    border-radius: 4px; padding: 14px 16px; cursor: pointer; transition: border-color 0.2s;
+  }
+  .feed-debate:hover { border-color: #e6002e; }
+  .feed-debate .fd-label {
+    font-size: 10px; color: #e6002e; font-weight: 700;
+    letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .feed-debate .fd-topic {
+    font-size: 16px; color: #eee; font-weight: 700; line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .feed-debate .fd-quote {
+    font-size: 12px; color: #666; font-style: italic;
+    margin-bottom: 8px; line-height: 1.5;
+    border-left: 2px solid #333; padding-left: 8px;
+  }
+  .feed-debate .fd-footer {
+    display: flex; align-items: center; gap: 12px; font-size: 12px; color: #555;
+  }
+  .feed-debate .fd-footer .fd-interact { display: flex; gap: 10px; align-items: center; }
+  .feed-debate .fd-cta { margin-left: auto; color: #e6002e; font-size: 11px; }
+  .fd-like-btn {
+    background: none; border: none; color: #555; cursor: pointer;
+    font-size: 12px; padding: 0; font-family: inherit;
+  }
+  .fd-like-btn.liked { color: #e6002e; }
+  .fd-like-btn:hover { color: #e6002e; }
+
+  /* Feed item: comment */
+  .feed-comment {
     background: #0f0f0f; border: 1px solid #1a1a1a;
     border-radius: 4px; padding: 10px 14px;
   }
-  .plaza-item .pi-header {
+  .feed-comment .fc-header {
     display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
     flex-wrap: wrap;
   }
@@ -369,18 +418,12 @@
   }
   .pi-badge.human { background: rgba(230,0,46,0.12); color: #e6002e; }
   .pi-badge.agent { background: rgba(80,224,176,0.12); color: #50e0b0; }
-  .pi-nick { font-size: 12px; font-weight: 700; color: #ccc; }
-  .pi-action { font-size: 11px; color: #444; }
-  .pi-topic { font-size: 11px; color: #e6002e; cursor: pointer; }
-  .pi-topic:hover { text-decoration: underline; }
-  .pi-time { font-size: 10px; color: #333; margin-left: auto; }
-  .plaza-item .pi-text { font-size: 13px; color: #aaa; line-height: 1.5; }
-  .plaza-empty {
-    text-align: center; padding: 20px;
-    background: #0f0f0f; border: 1px dashed #1a1a1a; border-radius: 4px;
-  }
-  .plaza-empty-text { font-size: 13px; color: #444; }
-  .plaza-empty-hint { font-size: 11px; color: #e6002e; margin-top: 6px; }
+  .fc-nick { font-size: 12px; font-weight: 700; color: #ccc; }
+  .fc-action { font-size: 11px; color: #444; }
+  .fc-topic { font-size: 11px; color: #e6002e; cursor: pointer; }
+  .fc-topic:hover { text-decoration: underline; }
+  .fc-time { font-size: 10px; color: #333; margin-left: auto; }
+  .feed-comment .fc-text { font-size: 13px; color: #aaa; line-height: 1.5; }
 
   .hot-section {
     max-width: 600px;
@@ -1423,30 +1466,9 @@
     <button class="url-submit" id="urlSubmit">分析</button>
   </div>
 
-  <!-- 🎭 正在上演 (Theater) -->
-  <div class="theater-section" id="theaterSection">
-    <div class="theater-title">
-      <span class="theater-icon">🎭</span> 正在上演
-      <span class="theater-counter" id="theaterCounter"></span>
-    </div>
-    <div class="theater-scroll" id="theaterScroll">
-      <!-- Dynamic from /api/feed, or empty state -->
-      <div class="theater-empty" id="theaterEmpty">
-        <div class="te-icon">⚖️</div>
-        <div class="te-text">法庭今日尚未开庭</div>
-        <div class="te-hint">👇 选择一个热榜话题，开启第一场辩论</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 🏛 广场动态 (Plaza) -->
-  <div class="plaza-section" id="plazaSection">
-    <div class="plaza-title">
-      🏛 广场动态
-      <span class="plaza-counter" id="plazaCounter"></span>
-    </div>
-
-    <div class="plaza-compose" id="plazaCompose">
+  <!-- Unified Feed -->
+  <div class="feed-section" id="feedSection">
+    <div class="feed-compose" id="plazaCompose">
       <div class="plaza-compose-row">
         <input type="text" id="plazaInput" placeholder="说点什么…随便聊聊也行" maxlength="200" />
       </div>
@@ -1456,22 +1478,7 @@
         <button class="plaza-agent-btn" id="plazaAgentBtn">🤖 用分身评论</button>
       </div>
     </div>
-
-    <div class="plaza-feed" id="plazaFeed">
-      <div class="plaza-empty" id="plazaEmpty">
-        <div class="plaza-empty-text">广场还很安静</div>
-        <div class="plaza-empty-hint">说点什么，留下第一条声音 ↑</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 🔥 知乎热榜 -->
-  <div class="hot-section">
-    <div class="hot-title">
-      🔥 今日热榜
-      <span class="api-tag">知乎热榜 API</span>
-    </div>
-    <div id="caseList"><!-- dynamic from /api/hotlist --></div>
+    <div class="feed-list" id="feedList"></div>
   </div>
 
   <!-- SecondMe bar -->
@@ -2202,35 +2209,121 @@ function showToast(icon, text, sub, duration = 2000) {
 
 // ============ Event Listeners ============
 
-// Nav: dynamic hotlist loading
-async function loadHotlist() {
-  const list = $('caseList');
+// ============ Unified Feed ============
+async function loadFeed() {
+  const list = $('feedList');
   try {
-    const resp = await fetch('/api/hotlist');
+    const resp = await fetch('/api/unified-feed');
     const data = await resp.json();
-    const items = data.items || [];
-    window._hotlistItems = items; // store for passing to debate API
-    list.innerHTML = items.map((item, i) => {
-      const title = item.title || '';
-      const info = item.interaction_info || {};
-      const answers = info.comment_count || item.answer_count || '';
-      const heat = item.heat_score ? (item.heat_score > 10000 ? (item.heat_score/10000).toFixed(1)+'万' : item.heat_score) : (item.heat || '');
-      return `
-      <div class="case-card" data-idx="${i}" data-topic="${title.replace(/"/g, '&quot;')}">
-        <div class="case-rank ${i < 2 ? 'top' : 'normal'}">${i + 1}</div>
-        <div class="case-question">${title}</div>
-        <div class="case-meta">
-          ${answers ? '<span>'+answers+' 条讨论</span>' : ''}
-          ${heat ? '<span>·</span><span class="case-heat">🔥 '+heat+' 热度</span>' : ''}
-        </div>
-      </div>`;
-    }).join('');
-  } catch (e) {
-    list.innerHTML = '<div style="color:#666;text-align:center;padding:20px">加载热榜失败，请输入话题</div>';
-  }
+    const feed = data.feed || [];
+    window._hotlistItems = []; // will be populated from feed topics
 
-  // Bind click events on dynamic cards — pass full item data
-  list.querySelectorAll('.case-card').forEach(card => {
+    if (!feed.length) {
+      list.innerHTML = '<div style="color:#555;text-align:center;padding:30px">加载中…</div>';
+      return;
+    }
+
+    // Collect hotlist items for debate generation
+    feed.forEach(item => {
+      if (item.feed_type === 'topic') {
+        window._hotlistItems[item.idx] = item;
+      }
+    });
+
+    // Populate topic selector for compose box
+    const sel = $('plazaTopicSelect');
+    const existingIds = new Set([...sel.options].map(o => o.value));
+    feed.forEach(item => {
+      if (item.feed_type === 'debate' && item.id && !existingIds.has(item.id)) {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        const label = (item.topic || '').length > 25 ? item.topic.slice(0, 25) + '…' : item.topic;
+        opt.textContent = label;
+        sel.appendChild(opt);
+        existingIds.add(item.id);
+      }
+    });
+
+    list.innerHTML = feed.map(item => {
+      if (item.feed_type === 'debate') return _renderDebateCard(item);
+      if (item.feed_type === 'topic') return _renderTopicCard(item);
+      if (item.feed_type === 'comment') return _renderCommentCard(item);
+      return '';
+    }).join('');
+
+    _bindFeedEvents();
+  } catch (e) {
+    list.innerHTML = '<div style="color:#666;text-align:center;padding:20px">加载失败，请刷新</div>';
+  }
+}
+
+function _renderDebateCard(d) {
+  const topic = d.topic || '';
+  const quote = d.golden_quote || '';
+  const did = d.id || '';
+  const likes = d.likes || 0;
+  const cmtCount = (d.comments || []).length;
+  const isLiked = did && localStorage.getItem('liked_' + did);
+  return `
+    <div class="feed-debate" data-id="${did}" data-topic="${_esc(topic)}">
+      <div class="fd-label">🎭 辩论回放</div>
+      <div class="fd-topic">${_esc(topic)}</div>
+      ${quote ? `<div class="fd-quote">${_esc(quote)}</div>` : ''}
+      <div class="fd-footer">
+        <div class="fd-interact">
+          <button class="fd-like-btn${isLiked ? ' liked' : ''}" data-id="${did}" onclick="event.stopPropagation()">♥ <span>${likes}</span></button>
+          <span>💬 ${cmtCount}</span>
+        </div>
+        <span class="fd-cta">围观 →</span>
+      </div>
+    </div>`;
+}
+
+function _renderTopicCard(item) {
+  const title = item.title || '';
+  const idx = item.idx;
+  return `
+    <div class="feed-topic" data-idx="${idx}" data-topic="${_esc(title)}">
+      <div class="ft-title">${_esc(title)}</div>
+      <div class="ft-meta">
+        <span class="ft-tag">🔥 热榜</span>
+        ${item.answer_count ? '<span>' + item.answer_count + ' 条讨论</span>' : ''}
+        ${item.heat ? '<span class="ft-heat">' + item.heat + ' 热度</span>' : ''}
+        <span class="ft-cta">开庭辩论 →</span>
+      </div>
+    </div>`;
+}
+
+function _renderCommentCard(item) {
+  const isAgent = item.source === 'agent';
+  const badgeClass = isAgent ? 'agent' : 'human';
+  const badgeText = isAgent ? 'AI 分身' : '真人';
+  const hasTopic = !!item.debate_topic;
+  const topicShort = hasTopic
+    ? (item.debate_topic.length > 20 ? item.debate_topic.slice(0, 20) + '…' : item.debate_topic)
+    : '';
+  const ago = _timeAgo(item.ts);
+  const debateId = item.debate_id || '';
+  const topicHtml = hasTopic
+    ? `<span class="fc-action">评论了</span><span class="fc-topic" data-id="${debateId}" data-topic="${_esc(item.debate_topic)}">「${_esc(topicShort)}」</span>`
+    : `<span class="fc-action">说</span>`;
+  return `
+    <div class="feed-comment">
+      <div class="fc-header">
+        <span class="pi-badge ${badgeClass}">${badgeText}</span>
+        <span class="fc-nick">${_esc(item.nickname || '匿名')}</span>
+        ${topicHtml}
+        <span class="fc-time">${ago}</span>
+      </div>
+      <div class="fc-text">${_esc(item.text || '')}</div>
+    </div>`;
+}
+
+function _bindFeedEvents() {
+  const list = $('feedList');
+
+  // Topic cards → start debate
+  list.querySelectorAll('.feed-topic').forEach(card => {
     card.addEventListener('click', () => {
       const topic = card.dataset.topic;
       const idx = parseInt(card.dataset.idx);
@@ -2239,81 +2332,58 @@ async function loadHotlist() {
       if (topic) startLoading(topic, itemData);
     });
   });
-}
-loadHotlist();
 
-// Nav: load feed (recent debates from circle)
-async function loadTheater() {
-  try {
-    const resp = await fetch('/api/theater');
-    const data = await resp.json();
-    const debates = data.debates || [];
-
-    if (!debates.length) {
-      $('theaterCounter').textContent = '';
-      return;
-    }
-
-    $('theaterCounter').textContent = `${debates.length} 场辩论`;
-
-    $('theaterScroll').innerHTML = debates.slice(0, 8).map(d => {
-      const topic = d.topic || '';
-      const quote = d.golden_quote || '';
-      const did = d.id || '';
-      const likes = d.likes || 0;
-      const cmtCount = (d.comments || []).length;
-      const ts = d.ts ? new Date(d.ts * 1000).toLocaleDateString('zh-CN', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
-      const isLiked = did && localStorage.getItem('liked_' + did);
-      return `
-        <div class="theater-card" data-topic="${topic.replace(/"/g, '&quot;')}" data-id="${did}">
-          <div class="tc-topic">${topic.length > 40 ? topic.slice(0,40) + '…' : topic}</div>
-          ${quote ? `<div class="tc-quote">${quote}</div>` : ''}
-          <div class="tc-footer">
-            <div class="tc-interact">
-              <button class="tc-like-btn${isLiked ? ' liked' : ''}" data-id="${did}">♥ <span>${likes}</span></button>
-              <span class="tc-comment-count">💬 ${cmtCount}</span>
-            </div>
-            <span class="tc-cta">围观 →</span>
-          </div>
-        </div>`;
-    }).join('');
-
-    // Like buttons on theater cards
-    $('theaterScroll').querySelectorAll('.tc-like-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        if (!id || localStorage.getItem('liked_' + id)) return;
-        try {
-          const resp = await fetch(`/api/debate/${id}/like`, { method: 'POST' });
-          const data = await resp.json();
-          if (data.ok) {
-            btn.classList.add('liked');
-            btn.querySelector('span').textContent = data.likes;
-            localStorage.setItem('liked_' + id, '1');
-          }
-        } catch (_) {}
-      });
+  // Debate cards → replay
+  list.querySelectorAll('.feed-debate').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      const topic = card.dataset.topic;
+      if (id) replayDebate(id, topic);
     });
+  });
 
-    // Click theater card → replay existing debate (or fall back to regenerate)
-    $('theaterScroll').querySelectorAll('.theater-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = card.dataset.id;
-        const topic = card.dataset.topic;
-        if (id) {
-          replayDebate(id, topic);
-        } else if (topic) {
-          currentHotlistIndex = -1;
-          startLoading(topic);
+  // Like buttons on debate cards
+  list.querySelectorAll('.fd-like-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (!id || localStorage.getItem('liked_' + id)) return;
+      try {
+        const resp = await fetch(`/api/debate/${id}/like`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.ok) {
+          btn.classList.add('liked');
+          btn.querySelector('span').textContent = data.likes;
+          localStorage.setItem('liked_' + id, '1');
         }
-      });
+      } catch (_) {}
     });
-  } catch (e) {
-    // Theater feed is optional, fail silently
-  }
+  });
+
+  // Comment topic links → replay
+  list.querySelectorAll('.fc-topic').forEach(el => {
+    el.addEventListener('click', () => {
+      const debateId = el.dataset.id;
+      const topic = el.dataset.topic;
+      if (debateId) replayDebate(debateId, topic);
+    });
+  });
 }
-loadTheater();
+
+function _timeAgo(ts) {
+  if (!ts) return '';
+  const sec = Math.floor(Date.now() / 1000 - ts);
+  if (sec < 60) return '刚刚';
+  if (sec < 3600) return Math.floor(sec / 60) + ' 分钟前';
+  if (sec < 86400) return Math.floor(sec / 3600) + ' 小时前';
+  return Math.floor(sec / 86400) + ' 天前';
+}
+
+function _esc(s) {
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
+loadFeed();
 
 // Nav: URL/topic submit — supports free text, URLs, and "title + URL" combos
 $('urlSubmit').addEventListener('click', () => {
@@ -2362,81 +2432,7 @@ $('secondmeLogin').addEventListener('click', () => {
 });
 
 
-// ========= Plaza — 广场动态 =========
-async function loadPlaza() {
-  try {
-    const resp = await fetch('/api/plaza');
-    const data = await resp.json();
-    const feed = data.feed || [];
-    const el = $('plazaFeed');
-    const emptyEl = $('plazaEmpty');
-
-    if (!feed.length) {
-      emptyEl.style.display = '';
-      return;
-    }
-    emptyEl.style.display = 'none';
-    $('plazaCounter').textContent = `${data.total} 条声音`;
-
-    el.innerHTML = feed.slice(0, 30).map(item => {
-      const isAgent = item.source === 'agent';
-      const badgeClass = isAgent ? 'agent' : 'human';
-      const badgeText = isAgent ? 'AI 分身' : '真人';
-      const hasTopic = !!item.debate_topic;
-      const topicShort = hasTopic
-        ? ((item.debate_topic.length > 20 ? item.debate_topic.slice(0, 20) + '…' : item.debate_topic))
-        : '';
-      const ago = _timeAgo(item.ts);
-      const debateId = item.debate_id || '';
-      const topicHtml = hasTopic
-        ? `<span class="pi-action">评论了</span><span class="pi-topic" data-id="${debateId}" data-topic="${_esc(item.debate_topic)}">「${_esc(topicShort)}」</span>`
-        : `<span class="pi-action">说</span>`;
-      return `
-        <div class="plaza-item">
-          <div class="pi-header">
-            <span class="pi-badge ${badgeClass}">${badgeText}</span>
-            <span class="pi-nick">${_esc(item.nickname || '匿名')}</span>
-            ${topicHtml}
-            <span class="pi-time">${ago}</span>
-          </div>
-          <div class="pi-text">${_esc(item.text || '')}</div>
-        </div>`;
-    }).join('');
-  } catch (e) {
-    // Plaza is optional — fail silently
-  }
-}
-
-function _timeAgo(ts) {
-  if (!ts) return '';
-  const sec = Math.floor(Date.now() / 1000 - ts);
-  if (sec < 60) return '刚刚';
-  if (sec < 3600) return Math.floor(sec / 60) + ' 分钟前';
-  if (sec < 86400) return Math.floor(sec / 3600) + ' 小时前';
-  return Math.floor(sec / 86400) + ' 天前';
-}
-
-function _esc(s) {
-  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
-}
-
-// Populate topic selector with known debates
-async function _populatePlazaTopics() {
-  try {
-    const resp = await fetch('/api/theater');
-    const data = await resp.json();
-    const sel = $('plazaTopicSelect');
-    (data.debates || []).forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d.id;
-      const label = (d.topic || '').length > 25 ? d.topic.slice(0, 25) + '…' : d.topic;
-      opt.textContent = label;
-      sel.appendChild(opt);
-    });
-  } catch (e) {}
-}
-
-// Send a plaza comment (human) — with or without a debate topic
+// ========= Compose box handlers =========
 $('plazaSendBtn').addEventListener('click', async () => {
   const debateId = $('plazaTopicSelect').value;
   const text = $('plazaInput').value.trim();
@@ -2457,7 +2453,7 @@ $('plazaSendBtn').addEventListener('click', async () => {
       });
     }
     $('plazaInput').value = '';
-    await loadPlaza();
+    await loadFeed();
   } catch (e) {
     alert('发送失败');
   }
@@ -2468,7 +2464,6 @@ $('plazaInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') $('plazaSendBtn').click();
 });
 
-// Send a plaza agent comment (Second Me)
 $('plazaAgentBtn').addEventListener('click', async () => {
   const debateId = $('plazaTopicSelect').value;
   if (!debateId) { alert('分身评论需要选择一个辩论话题作为上下文'); return; }
@@ -2483,7 +2478,7 @@ $('plazaAgentBtn').addEventListener('click', async () => {
     });
     const data = await resp.json();
     if (data.error) { alert('分身评论失败：' + data.error); return; }
-    await loadPlaza();
+    await loadFeed();
   } catch (e) {
     alert('分身评论失败');
   }
@@ -2491,25 +2486,10 @@ $('plazaAgentBtn').addEventListener('click', async () => {
   btn.textContent = '🤖 用分身评论';
 });
 
-// Click plaza topic to jump into replay
-$('plazaFeed').addEventListener('click', (e) => {
-  const topicEl = e.target.closest('.pi-topic');
-  if (!topicEl) return;
-  const debateId = topicEl.dataset.id;
-  const topic = topicEl.dataset.topic;
-  if (debateId && typeof replayDebate === 'function') {
-    replayDebate(debateId, topic);
-  }
-});
-
-// Show/hide agent button based on login
 function updatePlazaAgentBtn() {
   const logged = !!window._secondMeSession;
   $('plazaAgentBtn').classList.toggle('visible', logged);
 }
-
-loadPlaza();
-_populatePlazaTopics();
 updatePlazaAgentBtn();
 
 // Courtroom: click to advance
