@@ -211,7 +211,6 @@ async def plaza():
         did = d.get("id", "")
         for c in d.get("comments", []):
             feed.append({**c, "debate_topic": topic, "debate_id": did})
-    # Include auditorium reactions as agent-type entries
     for r in debate.auditorium_reactions:
         feed.append({
             "text": r.get("reaction", ""),
@@ -221,11 +220,80 @@ async def plaza():
             "debate_id": "",
             "ts": r.get("ts", 0),
         })
-    # Include free plaza comments (not tied to any debate)
     for c in debate.plaza_comments:
         feed.append(c)
     feed.sort(key=lambda x: x.get("ts", 0), reverse=True)
     return {"feed": feed[:50], "total": len(feed)}
+
+
+@router.get("/unified-feed")
+async def unified_feed():
+    """Merged feed: hotlist topics + completed debates + plaza comments, interleaved."""
+    HEAVY = {"script", "chars", "consensus_items"}
+
+    # 1) Hotlist topics
+    hotlist_items = await zhihu.get_hotlist()
+
+    # 2) Completed debates (lightweight)
+    debates_list = [
+        {**{k: v for k, v in d.items() if k not in HEAVY}, "feed_type": "debate"}
+        for d in reversed(debate.completed_debates[-20:])
+    ]
+
+    # 3) Plaza comments (from debates + free)
+    comments = []
+    for d in debate.completed_debates:
+        for c in d.get("comments", []):
+            comments.append({**c, "debate_topic": d.get("topic", ""), "debate_id": d.get("id", ""), "feed_type": "comment"})
+    for r in debate.auditorium_reactions:
+        comments.append({
+            "text": r.get("reaction", ""), "nickname": r.get("user_name", "AI 分身"),
+            "source": "agent", "debate_topic": r.get("topic", ""), "debate_id": "",
+            "feed_type": "comment", "ts": r.get("ts", 0),
+        })
+    for c in debate.plaza_comments:
+        comments.append({**c, "feed_type": "comment"})
+    comments.sort(key=lambda x: x.get("ts", 0), reverse=True)
+
+    # 4) Interleave: debates first, then hotlist topics with comments inserted every 3-4 items
+    feed = []
+    comment_idx = 0
+    # Lead with completed debates (most engaging)
+    for d in debates_list[:5]:
+        feed.append(d)
+        if comment_idx < len(comments):
+            feed.append(comments[comment_idx])
+            comment_idx += 1
+
+    # Then hotlist topics interleaved with remaining comments
+    for i, item in enumerate(hotlist_items):
+        info = item.get("interaction_info", {})
+        hs = item.get("heat_score")
+        heat_str = ""
+        if hs:
+            heat_str = f"{hs/10000:.1f}万" if hs > 10000 else str(hs)
+        else:
+            heat_str = item.get("heat", "")
+
+        feed.append({
+            "feed_type": "topic",
+            "title": item.get("title") or item.get("question", ""),
+            "heat": heat_str,
+            "answer_count": info.get("comment_count") or item.get("answer_count", ""),
+            "answers": item.get("answers", []),
+            "idx": i,
+        })
+        # Insert a comment after every 3 topics
+        if (i + 1) % 3 == 0 and comment_idx < len(comments):
+            feed.append(comments[comment_idx])
+            comment_idx += 1
+
+    # Append remaining comments at the end
+    while comment_idx < len(comments) and comment_idx < 30:
+        feed.append(comments[comment_idx])
+        comment_idx += 1
+
+    return {"feed": feed, "debates_count": len(debates_list), "hotlist_count": len(hotlist_items)}
 
 
 @router.post("/plaza/free-comment")
