@@ -9,11 +9,19 @@ from fastapi.responses import FileResponse
 load_dotenv()
 
 from routers import auth, api  # noqa: E402
+from services import database, debate  # noqa: E402
 
 app = FastAPI(title="众声 Voices", version="2.0.0")
 
 app.include_router(auth.router)
 app.include_router(api.router)
+
+
+@app.on_event("startup")
+async def startup():
+    database.init_db()
+    debate._load_debates()
+    debate._load_plaza()
 
 # Serve static assets
 static_dir = Path(__file__).parent / "static"
