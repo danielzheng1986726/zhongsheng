@@ -24,6 +24,29 @@ completed_debates: list[dict] = []
 # In-memory auditorium reactions from Second Me agents
 auditorium_reactions: list[dict] = []
 
+# Plaza free comments (not tied to a specific debate)
+PLAZA_FILE = Path(__file__).parent.parent / "zhihu_cache" / "plaza.json"
+plaza_comments: list[dict] = []
+
+
+def _load_plaza():
+    global plaza_comments
+    if PLAZA_FILE.exists():
+        try:
+            data = json.loads(PLAZA_FILE.read_text())
+            plaza_comments = data if isinstance(data, list) else []
+            log.info("Loaded %d plaza comments from disk", len(plaza_comments))
+        except Exception as e:
+            log.warning("Failed to load plaza comments: %s", e)
+
+
+def save_plaza():
+    try:
+        PLAZA_FILE.parent.mkdir(exist_ok=True)
+        PLAZA_FILE.write_text(json.dumps(plaza_comments, ensure_ascii=False))
+    except Exception as e:
+        log.warning("Failed to save plaza comments: %s", e)
+
 
 def _load_debates():
     """Load completed debates from disk on startup."""
@@ -74,6 +97,7 @@ def load_replay(debate_id: str) -> dict | None:
 
 
 _load_debates()
+_load_plaza()
 
 
 def find_debate(debate_id: str) -> dict | None:

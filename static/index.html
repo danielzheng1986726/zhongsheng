@@ -301,60 +301,86 @@
   .comment-item .ci-time { font-size: 10px; color: #333; }
   .comment-item .ci-text { font-size: 13px; color: #aaa; line-height: 1.5; }
 
-  /* ---- 旁听席 (Auditorium section) ---- */
-  .auditorium-section {
+  /* ---- 广场动态 (Plaza section) ---- */
+  .plaza-section {
     max-width: 600px;
     margin: 0 auto;
     padding: 0 20px 24px;
     position: relative;
     z-index: 1;
   }
-  .auditorium-title {
+  .plaza-title {
     display: flex; align-items: center; gap: 8px;
     font-size: 14px; color: #888; letter-spacing: 3px;
     margin-bottom: 12px; padding-left: 4px; transform: skewX(-2deg);
     font-weight: 700;
   }
-  .auditorium-title .aud-badge {
-    font-size: 10px; background: rgba(80,224,176,0.15); color: #50e0b0;
-    padding: 2px 8px; border-radius: 2px; letter-spacing: 1px;
-    transform: skewX(2deg);
-  }
-  .auditorium-placeholder {
+  .plaza-counter { font-size: 11px; color: rgba(230,0,46,0.6); margin-left: auto; letter-spacing: 0; }
+  .plaza-compose {
     background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px;
-    padding: 20px; text-align: center;
+    padding: 12px 14px; margin-bottom: 12px;
   }
-  .auditorium-placeholder .ap-text {
-    font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 12px;
+  .plaza-compose-row {
+    display: flex; gap: 8px; margin-bottom: 8px;
   }
-  .auditorium-placeholder .ap-text em { color: #50e0b0; font-style: normal; font-weight: 700; }
-  .auditorium-placeholder .ap-btn {
-    display: inline-block; background: rgba(80,224,176,0.1);
-    border: 1px solid rgba(80,224,176,0.3); color: #50e0b0;
-    padding: 8px 20px; border-radius: 2px; font-size: 12px;
-    font-weight: 700; cursor: pointer; transition: background 0.2s;
+  .plaza-compose select {
+    background: #111; border: 1px solid #1a1a1a; color: #888;
+    padding: 6px 8px; border-radius: 3px; font-size: 12px;
+    font-family: inherit; outline: none; max-width: 160px;
   }
-  .auditorium-placeholder .ap-btn:hover { background: rgba(80,224,176,0.2); }
-  /* Reaction cards in auditorium */
-  .aud-reactions { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-  .aud-reaction {
-    background: #0f0f0f; border: 1px solid #1a1a1a; border-left: 3px solid #50e0b0;
-    border-radius: 4px; padding: 12px 14px; text-align: left;
+  .plaza-compose select:focus { border-color: #e6002e; }
+  .plaza-compose input {
+    flex: 1; background: #111; border: 1px solid #1a1a1a;
+    color: #ccc; padding: 6px 10px; border-radius: 3px;
+    font-size: 13px; font-family: inherit; outline: none;
   }
-  .aud-reaction .ar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .aud-reaction .ar-avatar {
-    width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
-    border: 1px solid #333; background: #222;
+  .plaza-compose input:focus { border-color: #e6002e; }
+  .plaza-compose input::placeholder { color: #333; }
+  .plaza-compose-actions {
+    display: flex; align-items: center; gap: 8px;
   }
-  .aud-reaction .ar-avatar-placeholder {
-    width: 28px; height: 28px; border-radius: 50%; background: #222;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; border: 1px solid #333;
+  .plaza-send-btn {
+    background: rgba(230,0,46,0.1); border: 1px solid rgba(230,0,46,0.3);
+    color: #e6002e; padding: 6px 14px; border-radius: 3px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
   }
-  .aud-reaction .ar-name { font-size: 12px; color: #50e0b0; font-weight: 700; }
-  .aud-reaction .ar-topic { font-size: 11px; color: #555; margin-left: auto; }
-  .aud-reaction .ar-text { font-size: 13px; color: #aaa; line-height: 1.5; }
-  .aud-counter { font-size: 11px; color: #50e0b0; margin-left: auto; }
+  .plaza-send-btn:hover { background: rgba(230,0,46,0.2); }
+  .plaza-agent-btn {
+    background: rgba(80,224,176,0.08); border: 1px solid rgba(80,224,176,0.25);
+    color: #50e0b0; padding: 6px 14px; border-radius: 3px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; display: none;
+  }
+  .plaza-agent-btn:hover { background: rgba(80,224,176,0.15); }
+  .plaza-agent-btn.visible { display: inline-block; }
+  .plaza-feed { display: flex; flex-direction: column; gap: 10px; }
+  .plaza-item {
+    background: #0f0f0f; border: 1px solid #1a1a1a;
+    border-radius: 4px; padding: 10px 14px;
+  }
+  .plaza-item .pi-header {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .pi-badge {
+    font-size: 9px; padding: 1px 5px; border-radius: 2px;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+  .pi-badge.human { background: rgba(230,0,46,0.12); color: #e6002e; }
+  .pi-badge.agent { background: rgba(80,224,176,0.12); color: #50e0b0; }
+  .pi-nick { font-size: 12px; font-weight: 700; color: #ccc; }
+  .pi-action { font-size: 11px; color: #444; }
+  .pi-topic { font-size: 11px; color: #e6002e; cursor: pointer; }
+  .pi-topic:hover { text-decoration: underline; }
+  .pi-time { font-size: 10px; color: #333; margin-left: auto; }
+  .plaza-item .pi-text { font-size: 13px; color: #aaa; line-height: 1.5; }
+  .plaza-empty {
+    text-align: center; padding: 20px;
+    background: #0f0f0f; border: 1px dashed #1a1a1a; border-radius: 4px;
+  }
+  .plaza-empty-text { font-size: 13px; color: #444; }
+  .plaza-empty-hint { font-size: 11px; color: #e6002e; margin-top: 6px; }
 
   .hot-section {
     max-width: 600px;
@@ -1413,17 +1439,29 @@
     </div>
   </div>
 
-  <!-- 🧑‍⚖️ 旁听席 (Auditorium) — between theater and hotlist for visibility -->
-  <div class="auditorium-section" id="auditoriumSection">
-    <div class="auditorium-title">
-      🧑‍⚖️ 旁听席
-      <span class="aud-badge">A2A</span>
-      <span class="aud-counter" id="audCounter"></span>
+  <!-- 🏛 广场动态 (Plaza) -->
+  <div class="plaza-section" id="plazaSection">
+    <div class="plaza-title">
+      🏛 广场动态
+      <span class="plaza-counter" id="plazaCounter"></span>
     </div>
-    <div id="audReactions" class="aud-reactions"></div>
-    <div class="auditorium-placeholder" id="auditoriumContent">
-      <div class="ap-text">🎭 辩论少了一个人——你的 AI 分身还没到场</div>
-      <div class="ap-btn" id="auditoriumLogin">登录 Second Me，让分身出庭 →</div>
+
+    <div class="plaza-compose" id="plazaCompose">
+      <div class="plaza-compose-row">
+        <input type="text" id="plazaInput" placeholder="说点什么…随便聊聊也行" maxlength="200" />
+      </div>
+      <div class="plaza-compose-actions">
+        <select id="plazaTopicSelect"><option value="">💬 自由发言</option></select>
+        <button class="plaza-send-btn" id="plazaSendBtn">发表</button>
+        <button class="plaza-agent-btn" id="plazaAgentBtn">🤖 用分身评论</button>
+      </div>
+    </div>
+
+    <div class="plaza-feed" id="plazaFeed">
+      <div class="plaza-empty" id="plazaEmpty">
+        <div class="plaza-empty-text">广场还很安静</div>
+        <div class="plaza-empty-hint">说点什么，留下第一条声音 ↑</div>
+      </div>
     </div>
   </div>
 
@@ -1922,7 +1960,7 @@ async function sendComment() {
     const resp = await fetch(`/api/debate/${currentDebateId}/comment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, source: 'human' }),
     });
     const data = await resp.json();
     if (data.ok) {
@@ -1935,10 +1973,15 @@ async function sendComment() {
 function appendComment(c) {
   const list = $('commentList');
   const ts = c.ts ? new Date(c.ts * 1000).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}) : '';
+  const isAgent = c.source === 'agent';
+  const badgeHtml = isAgent
+    ? '<span class="pi-badge agent" style="margin-right:4px">AI 分身</span>'
+    : '<span class="pi-badge human" style="margin-right:4px">真人</span>';
   const div = document.createElement('div');
   div.className = 'comment-item';
   div.innerHTML = `
     <div class="ci-header">
+      ${badgeHtml}
       <span class="ci-nick">${(c.nickname || '匿名旁听').replace(/</g, '&lt;')}</span>
       <span class="ci-time">${ts}</span>
     </div>
@@ -2307,11 +2350,8 @@ async function checkAuth() {
         <div class="secondme-icon">🤖</div>
         <div class="secondme-text">✅ ${data.name} 的 AI 分身已就位 · 辩论中将自动出庭</div>
       `;
-      // Update auditorium placeholder for logged-in users
-      const apText = $('auditoriumContent').querySelector('.ap-text');
-      if (apText) apText.textContent = '✅ 你的分身已就位，开一场辩论试试！';
-      const apBtn = $('auditoriumContent').querySelector('.ap-btn');
-      if (apBtn) apBtn.style.display = 'none';
+      window._secondMeSession = true;
+      updatePlazaAgentBtn();
     }
   } catch (e) {}
 }
@@ -2321,49 +2361,156 @@ $('secondmeLogin').addEventListener('click', () => {
   window.location.href = '/api/auth/login';
 });
 
-// Auditorium login button
-$('auditoriumLogin').addEventListener('click', () => {
-  window.location.href = '/api/auth/login';
-});
 
-// Load auditorium reactions
-async function loadAuditorium() {
+// ========= Plaza — 广场动态 =========
+async function loadPlaza() {
   try {
-    const resp = await fetch('/api/auditorium');
+    const resp = await fetch('/api/plaza');
     const data = await resp.json();
-    const reactions = data.reactions || [];
+    const feed = data.feed || [];
+    const el = $('plazaFeed');
+    const emptyEl = $('plazaEmpty');
 
-    if (!reactions.length) {
-      $('audCounter').textContent = '';
-      $('audReactions').innerHTML = '';
+    if (!feed.length) {
+      emptyEl.style.display = '';
       return;
     }
+    emptyEl.style.display = 'none';
+    $('plazaCounter').textContent = `${data.total} 条声音`;
 
-    $('audCounter').textContent = `${reactions.length} 条发言`;
-    // Simplify placeholder to a compact CTA when reactions exist
-    $('auditoriumContent').querySelector('.ap-text').textContent = '你的分身也来说两句？';
-    $('auditoriumContent').style.padding = '10px';
-
-    $('audReactions').innerHTML = reactions.slice(0, 10).map(r => {
-      const avatarEl = r.user_avatar
-        ? `<img class="ar-avatar" src="${r.user_avatar}" alt="">`
-        : `<div class="ar-avatar-placeholder">🧑‍💻</div>`;
-      const topicShort = (r.topic || '').length > 15 ? r.topic.slice(0, 15) + '…' : r.topic;
+    el.innerHTML = feed.slice(0, 30).map(item => {
+      const isAgent = item.source === 'agent';
+      const badgeClass = isAgent ? 'agent' : 'human';
+      const badgeText = isAgent ? 'AI 分身' : '真人';
+      const hasTopic = !!item.debate_topic;
+      const topicShort = hasTopic
+        ? ((item.debate_topic.length > 20 ? item.debate_topic.slice(0, 20) + '…' : item.debate_topic))
+        : '';
+      const ago = _timeAgo(item.ts);
+      const debateId = item.debate_id || '';
+      const topicHtml = hasTopic
+        ? `<span class="pi-action">评论了</span><span class="pi-topic" data-id="${debateId}" data-topic="${_esc(item.debate_topic)}">「${_esc(topicShort)}」</span>`
+        : `<span class="pi-action">说</span>`;
       return `
-        <div class="aud-reaction">
-          <div class="ar-header">
-            ${avatarEl}
-            <span class="ar-name">${r.user_name || '匿名分身'}</span>
-            <span class="ar-topic">关于「${topicShort}」</span>
+        <div class="plaza-item">
+          <div class="pi-header">
+            <span class="pi-badge ${badgeClass}">${badgeText}</span>
+            <span class="pi-nick">${_esc(item.nickname || '匿名')}</span>
+            ${topicHtml}
+            <span class="pi-time">${ago}</span>
           </div>
-          <div class="ar-text">${r.reaction || ''}</div>
+          <div class="pi-text">${_esc(item.text || '')}</div>
         </div>`;
     }).join('');
   } catch (e) {
-    // Auditorium is optional
+    // Plaza is optional — fail silently
   }
 }
-loadAuditorium();
+
+function _timeAgo(ts) {
+  if (!ts) return '';
+  const sec = Math.floor(Date.now() / 1000 - ts);
+  if (sec < 60) return '刚刚';
+  if (sec < 3600) return Math.floor(sec / 60) + ' 分钟前';
+  if (sec < 86400) return Math.floor(sec / 3600) + ' 小时前';
+  return Math.floor(sec / 86400) + ' 天前';
+}
+
+function _esc(s) {
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
+// Populate topic selector with known debates
+async function _populatePlazaTopics() {
+  try {
+    const resp = await fetch('/api/theater');
+    const data = await resp.json();
+    const sel = $('plazaTopicSelect');
+    (data.debates || []).forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      const label = (d.topic || '').length > 25 ? d.topic.slice(0, 25) + '…' : d.topic;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+  } catch (e) {}
+}
+
+// Send a plaza comment (human) — with or without a debate topic
+$('plazaSendBtn').addEventListener('click', async () => {
+  const debateId = $('plazaTopicSelect').value;
+  const text = $('plazaInput').value.trim();
+  if (!text) return;
+  $('plazaSendBtn').disabled = true;
+  try {
+    if (debateId) {
+      await fetch(`/api/debate/${debateId}/comment`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text, nickname: '匿名旁听', source: 'human' }),
+      });
+    } else {
+      await fetch('/api/plaza/free-comment', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text, nickname: '匿名旁听', source: 'human' }),
+      });
+    }
+    $('plazaInput').value = '';
+    await loadPlaza();
+  } catch (e) {
+    alert('发送失败');
+  }
+  $('plazaSendBtn').disabled = false;
+});
+
+$('plazaInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('plazaSendBtn').click();
+});
+
+// Send a plaza agent comment (Second Me)
+$('plazaAgentBtn').addEventListener('click', async () => {
+  const debateId = $('plazaTopicSelect').value;
+  if (!debateId) { alert('分身评论需要选择一个辩论话题作为上下文'); return; }
+  const btn = $('plazaAgentBtn');
+  btn.disabled = true;
+  btn.textContent = '🤖 分身思考中…';
+  try {
+    const resp = await fetch('/api/plaza/agent-comment', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ debate_id: debateId }),
+    });
+    const data = await resp.json();
+    if (data.error) { alert('分身评论失败：' + data.error); return; }
+    await loadPlaza();
+  } catch (e) {
+    alert('分身评论失败');
+  }
+  btn.disabled = false;
+  btn.textContent = '🤖 用分身评论';
+});
+
+// Click plaza topic to jump into replay
+$('plazaFeed').addEventListener('click', (e) => {
+  const topicEl = e.target.closest('.pi-topic');
+  if (!topicEl) return;
+  const debateId = topicEl.dataset.id;
+  const topic = topicEl.dataset.topic;
+  if (debateId && typeof replayDebate === 'function') {
+    replayDebate(debateId, topic);
+  }
+});
+
+// Show/hide agent button based on login
+function updatePlazaAgentBtn() {
+  const logged = !!window._secondMeSession;
+  $('plazaAgentBtn').classList.toggle('visible', logged);
+}
+
+loadPlaza();
+_populatePlazaTopics();
+updatePlazaAgentBtn();
 
 // Courtroom: click to advance
 document.addEventListener('click', (e) => {
