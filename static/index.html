@@ -2020,6 +2020,10 @@ async function startLoading(topic, itemData, url) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reqBody),
     });
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => '服务器错误');
+      throw new Error(errText);
+    }
     const reader = resp.body.getReader();
     const decoder = new TextDecoder();
     let buf = '';
@@ -2997,6 +3001,7 @@ function exitCourtroom() {
   currentStep = 0;
   hideChar('left');
   hideChar('right');
+  loadFeed();
 }
 
 $('restartBtn').addEventListener('click', (e) => {
@@ -3015,10 +3020,11 @@ $('nextCaseBtn').addEventListener('click', (e) => {
   hideChar('right');
   currentStep = 0;
 
-  const items = window._hotlistItems || [];
+  const items = (window._hotlistItems || []).filter(Boolean);
   if (currentHotlistIndex >= 0 && currentHotlistIndex < items.length - 1) {
     currentHotlistIndex++;
     const next = items[currentHotlistIndex];
+    if (!next) { $('navPage').classList.remove('hidden'); return; }
     startLoading(next.title || next.question || '未知话题', next);
   } else {
     // Reached the end or no index — go back to list

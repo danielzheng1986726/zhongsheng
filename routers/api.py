@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import os
 import time
 
 from fastapi import APIRouter, Request
@@ -12,6 +13,8 @@ from services import zhihu, debate, secondme, database
 from routers.auth import _get_session
 
 log = logging.getLogger("api")
+
+ADMIN_TOKEN = os.getenv("AI_BUILDER_TOKEN", "")
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -63,7 +66,12 @@ async def generate_debate(request: Request):
             topic = resolved
 
     if not topic:
-        return {"error": "topic is required"}
+        from fastapi.responses import StreamingResponse
+
+        async def _err():
+            yield f"data: {json.dumps({'phase': 'error', 'message': '请输入讨论话题'}, ensure_ascii=False)}\n\n"
+
+        return StreamingResponse(_err(), media_type="text/event-stream")
 
     context_answers = body.get("context_answers", [])
 
@@ -432,9 +440,18 @@ async def write_memory(request: Request):
         return {"error": str(e)}
 
 
+def _check_admin(request: Request) -> bool:
+    """Verify admin access via Authorization header or query param."""
+    auth = request.headers.get("authorization", "")
+    token = auth.replace("Bearer ", "") if auth.startswith("Bearer ") else request.query_params.get("token", "")
+    return bool(ADMIN_TOKEN and token == ADMIN_TOKEN)
+
+
 @router.get("/admin/users")
-async def admin_users():
+async def admin_users(request: Request):
     """Return registered user count and names (no tokens exposed)."""
+    if ADMIN_TOKEN and not _check_admin(request):
+        return {"error": "unauthorized"}
     if not database.is_enabled():
         return {"count": 0, "users": []}
     users = database.get_all_users()
@@ -451,6 +468,8 @@ async def seed_debates(request: Request):
     Body: {"count": 3} (optional, defaults to 3)
     Fires debates in background and returns immediately.
     """
+    if ADMIN_TOKEN and not _check_admin(request):
+        return {"error": "unauthorized"}
     body = await request.json() if request.headers.get("content-type") else {}
     count = min(body.get("count", 3), 5)
 

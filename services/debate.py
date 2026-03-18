@@ -563,7 +563,7 @@ async def _auto_agent_comments(debate_id: str, topic: str, golden_quote: str):
             log.info("Agent comment from %s on debate %s", name, debate_id[:8])
         except Exception as e:
             log.warning("Agent comment failed for %s: %s", user["user_name"], e)
-            # If token expired, try refresh
+            # If token expired, try refresh and retry
             if "401" in str(e) or "unauthorized" in str(e).lower():
                 try:
                     rt = user.get("refresh_token", "")
@@ -574,7 +574,29 @@ async def _auto_agent_comments(debate_id: str, topic: str, golden_quote: str):
                         if new_at:
                             database.update_user_token(user["user_name"], new_at, new_rt)
                             database.sync()
-                            log.info("Refreshed token for %s", user["user_name"])
+                            log.info("Refreshed token for %s, retrying comment", user["user_name"])
+                            # Retry with new token
+                            try:
+                                reply = await secondme.chat_full(new_at, prompt)
+                                if reply and len(reply.strip()) >= 2:
+                                    comment = {
+                                        "text": reply.strip()[:200],
+                                        "nickname": name,
+                                        "source": "agent",
+                                        "debate_topic": topic,
+                                        "debate_id": debate_id,
+                                        "ts": time.time(),
+                                    }
+                                    entry = find_debate(debate_id)
+                                    if entry:
+                                        if "comments" not in entry:
+                                            entry["comments"] = []
+                                        entry["comments"].append(comment)
+                                    database.add_comment(comment)
+                                    database.sync()
+                                    log.info("Retry agent comment succeeded for %s", name)
+                            except Exception as retry_e:
+                                log.warning("Retry agent comment failed for %s: %s", name, retry_e)
                 except Exception as re:
                     log.warning("Token refresh failed for %s: %s", user["user_name"], re)
 

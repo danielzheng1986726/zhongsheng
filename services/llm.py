@@ -78,9 +78,15 @@ async def chat_json(
     # Strip markdown code fences if present
     text = raw.strip()
     if text.startswith("```"):
-        first_nl = text.index("\n")
-        last_fence = text.rfind("```")
-        text = text[first_nl + 1 : last_fence].strip()
+        first_nl = text.find("\n")
+        if first_nl == -1:
+            text = text.strip("`").strip()
+        else:
+            last_fence = text.rfind("```")
+            if last_fence > first_nl:
+                text = text[first_nl + 1 : last_fence].strip()
+            else:
+                text = text[first_nl + 1 :].strip()
     try:
         return json.loads(text)
     except json.JSONDecodeError:
