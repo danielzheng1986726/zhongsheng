@@ -8,7 +8,7 @@ import time
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
-from services import zhihu, debate, secondme
+from services import zhihu, debate, secondme, database
 from routers.auth import _get_session
 
 log = logging.getLogger("api")
@@ -144,7 +144,11 @@ async def like_debate(debate_id: str):
         return {"error": "debate not found"}
 
     entry["likes"] = entry.get("likes", 0) + 1
-    debate.save_debates()
+    if database.is_enabled():
+        database.update_likes(debate_id, entry["likes"])
+        database.sync()
+    else:
+        debate.save_debates()
 
     pin_token = entry.get("pin_token")
     if pin_token:
@@ -179,7 +183,11 @@ async def comment_debate(debate_id: str, request: Request):
     if "comments" not in entry:
         entry["comments"] = []
     entry["comments"].append(comment)
-    debate.save_debates()
+    if database.is_enabled():
+        database.add_comment(comment)
+        database.sync()
+    else:
+        debate.save_debates()
 
     pin_token = entry.get("pin_token")
     if pin_token:
@@ -316,7 +324,11 @@ async def plaza_free_comment(request: Request):
         "ts": time.time(),
     }
     debate.plaza_comments.append(comment)
-    debate.save_plaza()
+    if database.is_enabled():
+        database.add_comment(comment)
+        database.sync()
+    else:
+        debate.save_plaza()
     return {"ok": True, "comment": comment}
 
 
@@ -365,7 +377,11 @@ async def agent_comment(request: Request):
         if "comments" not in entry:
             entry["comments"] = []
         entry["comments"].append(comment)
-        debate.save_debates()
+        if database.is_enabled():
+            database.add_comment(comment)
+            database.sync()
+        else:
+            debate.save_debates()
 
         return {"ok": True, "comment": comment}
     except Exception as e:

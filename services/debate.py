@@ -12,7 +12,7 @@ import re
 import time
 import uuid
 from pathlib import Path
-from services import llm, secondme, zhihu
+from services import llm, secondme, zhihu, database
 
 log = logging.getLogger("debate")
 
@@ -31,6 +31,10 @@ plaza_comments: list[dict] = []
 
 def _load_plaza():
     global plaza_comments
+    if database.is_enabled():
+        plaza_comments = database.get_plaza_comments(limit=200)
+        log.info("Loaded %d plaza comments from DB", len(plaza_comments))
+        return
     if PLAZA_FILE.exists():
         try:
             data = json.loads(PLAZA_FILE.read_text())
@@ -49,8 +53,21 @@ def save_plaza():
 
 
 def _load_debates():
-    """Load completed debates from disk on startup."""
-    global completed_debates
+    """Load completed debates from DB (if enabled) or disk on startup."""
+    global completed_debates, auditorium_reactions
+    if database.is_enabled():
+        completed_debates = database.get_debates(limit=100)
+        for d in completed_debates:
+            d["comments"] = database.get_debate_comments(d["id"])
+            # Load heavy fields from DB for replay
+            full = database.get_debate(d["id"])
+            if full:
+                d["script"] = full.get("script", [])
+                d["chars"] = full.get("chars", {})
+                d["consensus_items"] = full.get("consensus_items", [])
+        auditorium_reactions = database.get_reactions(limit=200)
+        log.info("Loaded %d debates, %d reactions from DB", len(completed_debates), len(auditorium_reactions))
+        return
     if DEBATES_FILE.exists():
         try:
             data = json.loads(DEBATES_FILE.read_text())
@@ -87,6 +104,8 @@ def _save_replay(debate_id: str, payload: dict):
 
 def load_replay(debate_id: str) -> dict | None:
     """Load full replay data for a debate."""
+    if database.is_enabled():
+        return database.get_debate(debate_id)
     p = DEBATES_FILE.parent / f"debate_{debate_id}.json"
     if p.exists():
         try:
@@ -94,10 +113,6 @@ def load_replay(debate_id: str) -> dict | None:
         except Exception:
             pass
     return None
-
-
-_load_debates()
-_load_plaza()
 
 
 def find_debate(debate_id: str) -> dict | None:
@@ -425,13 +440,17 @@ async def generate(
                 script = script[:insert_idx] + user_steps + script[insert_idx:]
 
                 # Save reaction to auditorium
-                auditorium_reactions.append({
+                reaction_entry = {
                     "user_name": user_name,
                     "user_avatar": user_info.get("avatar", ""),
                     "reaction": sm_response,
                     "topic": topic,
                     "ts": time.time(),
-                })
+                }
+                auditorium_reactions.append(reaction_entry)
+                if database.is_enabled():
+                    database.add_reaction(reaction_entry)
+                    database.sync()
         except Exception:
             pass
 
@@ -466,17 +485,21 @@ async def generate(
         "consensus_items": consensus_items,
     })
 
-    # Persist: save replay file + update index
-    _save_replay(debate_id, {
-        "debate_id": debate_id,
-        "topic": topic,
-        "script": script,
-        "chars": chars,
-        "consensus_items": consensus_items,
-        "golden_quote": golden_quote or "",
-        "warmth_message": re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else "",
-    })
-    save_debates()
+    # Persist to DB or file
+    if database.is_enabled():
+        database.save_debate(completed_debates[-1])
+        database.sync()
+    else:
+        _save_replay(debate_id, {
+            "debate_id": debate_id,
+            "topic": topic,
+            "script": script,
+            "chars": chars,
+            "consensus_items": consensus_items,
+            "golden_quote": golden_quote or "",
+            "warmth_message": re.sub(r"<[^>]+>", "", warmth_message) if warmth_message else "",
+        })
+        save_debates()
 
     # Publish to Zhihu circle only when explicitly requested (e.g. seed)
     if auto_publish:
@@ -508,7 +531,11 @@ async def _publish_to_circle(content: str, cache_key: str, debate_id: str = ""):
                 entry = find_debate(debate_id)
                 if entry:
                     entry["pin_token"] = pin_token
-                    save_debates()
+                    if database.is_enabled():
+                        database.update_pin_token(debate_id, pin_token)
+                        database.sync()
+                    else:
+                        save_debates()
                     log.info("Saved pin_token for debate %s", debate_id)
         else:
             log.warning("Circle publish failed: %s", result)

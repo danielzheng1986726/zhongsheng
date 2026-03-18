@@ -5,3 +5,7 @@ __pycache__/
 node_modules/
 .claude/settings.local.json
 zhihu_cache/
+
+# Turso local replica
+local.db
+local.db-*
