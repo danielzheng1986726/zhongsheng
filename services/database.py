@@ -62,6 +62,15 @@ def init_db():
                 topic       TEXT DEFAULT '',
                 ts          REAL NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS users (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_name      TEXT NOT NULL,
+                user_avatar    TEXT DEFAULT '',
+                access_token   TEXT NOT NULL,
+                refresh_token  TEXT DEFAULT '',
+                created_at     REAL NOT NULL,
+                updated_at     REAL NOT NULL
+            );
         """)
         _conn.commit()
         _conn.sync()
@@ -231,6 +240,59 @@ def get_reactions(limit: int = 50) -> list[dict]:
          "topic": r[3], "ts": r[4]}
         for r in rows
     ]
+
+
+# ── Users ────────────────────────────────────────────────
+
+def upsert_user(user_name: str, user_avatar: str, access_token: str, refresh_token: str):
+    """Insert or update a user's tokens. Keyed by user_name."""
+    if not _conn:
+        return
+    import time
+    now = time.time()
+    # Check if user exists
+    row = _conn.execute("SELECT id FROM users WHERE user_name = ?", (user_name,)).fetchone()
+    if row:
+        _conn.execute(
+            "UPDATE users SET access_token = ?, refresh_token = ?, user_avatar = ?, updated_at = ? WHERE user_name = ?",
+            (access_token, refresh_token, user_avatar, now, user_name),
+        )
+    else:
+        _conn.execute(
+            "INSERT INTO users (user_name, user_avatar, access_token, refresh_token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (user_name, user_avatar, access_token, refresh_token, now, now),
+        )
+    _conn.commit()
+
+
+def get_all_users() -> list[dict]:
+    if not _conn:
+        return []
+    rows = _conn.execute(
+        "SELECT user_name, user_avatar, access_token, refresh_token FROM users ORDER BY updated_at DESC"
+    ).fetchall()
+    return [
+        {"user_name": r[0], "user_avatar": r[1], "access_token": r[2], "refresh_token": r[3]}
+        for r in rows
+    ]
+
+
+def update_user_token(user_name: str, access_token: str, refresh_token: str = ""):
+    if not _conn:
+        return
+    import time
+    _conn.execute(
+        "UPDATE users SET access_token = ?, refresh_token = ?, updated_at = ? WHERE user_name = ?",
+        (access_token, refresh_token, time.time(), user_name),
+    )
+    _conn.commit()
+
+
+def get_user_count() -> int:
+    if not _conn:
+        return 0
+    row = _conn.execute("SELECT COUNT(*) FROM users").fetchone()
+    return row[0] if row else 0
 
 
 # ── Sync ─────────────────────────────────────────────────

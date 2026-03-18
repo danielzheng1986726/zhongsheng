@@ -501,6 +501,10 @@ async def generate(
         })
         save_debates()
 
+    # Auto-generate agent comments from all registered users (background)
+    if database.is_enabled():
+        asyncio.create_task(_auto_agent_comments(debate_id, topic, golden_quote))
+
     # Publish to Zhihu circle only when explicitly requested (e.g. seed)
     if auto_publish:
         try:
@@ -516,6 +520,63 @@ async def generate(
                 asyncio.create_task(_publish_to_circle(pin_content, cache_key, debate_id))
         except Exception:
             pass
+
+
+async def _auto_agent_comments(debate_id: str, topic: str, golden_quote: str):
+    """Background: iterate all stored users and generate agent comments."""
+    users = database.get_all_users()
+    if not users:
+        return
+    log.info("Auto agent comments: %d users for debate %s", len(users), debate_id)
+    for user in users:
+        try:
+            token = user["access_token"]
+            name = user["user_name"]
+            prompt = (
+                f"你在一个叫「众声法庭」的产品里围观了一场关于「{topic}」的辩论。"
+                f"辩论金句是：「{golden_quote}」。"
+                f"请用你自己的口吻，写一句简短的看法或感想（不超过50字）。"
+                f"语气轻松自然，就像在朋友圈评论一样。"
+            )
+            reply = await secondme.chat_full(token, prompt)
+            if not reply or len(reply.strip()) < 2:
+                continue
+
+            comment = {
+                "text": reply.strip()[:200],
+                "nickname": name,
+                "source": "agent",
+                "debate_topic": topic,
+                "debate_id": debate_id,
+                "ts": time.time(),
+            }
+            # Add to in-memory debate entry
+            entry = find_debate(debate_id)
+            if entry:
+                if "comments" not in entry:
+                    entry["comments"] = []
+                entry["comments"].append(comment)
+
+            # Persist to DB
+            database.add_comment(comment)
+            database.sync()
+            log.info("Agent comment from %s on debate %s", name, debate_id[:8])
+        except Exception as e:
+            log.warning("Agent comment failed for %s: %s", user["user_name"], e)
+            # If token expired, try refresh
+            if "401" in str(e) or "unauthorized" in str(e).lower():
+                try:
+                    rt = user.get("refresh_token", "")
+                    if rt:
+                        new_tokens = await secondme.refresh_token(rt)
+                        new_at = new_tokens.get("access_token", new_tokens.get("accessToken", ""))
+                        new_rt = new_tokens.get("refresh_token", new_tokens.get("refreshToken", rt))
+                        if new_at:
+                            database.update_user_token(user["user_name"], new_at, new_rt)
+                            database.sync()
+                            log.info("Refreshed token for %s", user["user_name"])
+                except Exception as re:
+                    log.warning("Token refresh failed for %s: %s", user["user_name"], re)
 
 
 async def _publish_to_circle(content: str, cache_key: str, debate_id: str = ""):

@@ -432,6 +432,18 @@ async def write_memory(request: Request):
         return {"error": str(e)}
 
 
+@router.get("/admin/users")
+async def admin_users():
+    """Return registered user count and names (no tokens exposed)."""
+    if not database.is_enabled():
+        return {"count": 0, "users": []}
+    users = database.get_all_users()
+    return {
+        "count": len(users),
+        "users": [{"name": u["user_name"], "avatar": u["user_avatar"]} for u in users],
+    }
+
+
 @router.post("/admin/seed")
 async def seed_debates(request: Request):
     """Pre-generate debates for top hotlist items to fill the theater feed.
