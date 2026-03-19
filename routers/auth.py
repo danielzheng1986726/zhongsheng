@@ -11,7 +11,12 @@ from services import secondme, database
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-SECRET_KEY = os.getenv("SECRET_KEY", "zhongsheng-dev-secret-change-me")
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+if not SECRET_KEY:
+    import secrets
+    SECRET_KEY = secrets.token_hex(32)
+    import logging
+    logging.getLogger("auth").warning("SECRET_KEY not set — generated random key (sessions won't survive restart)")
 COOKIE_NAME = "zs_session"
 MAX_AGE = 7 * 24 * 3600  # 7 days
 

@@ -18,6 +18,12 @@ log = logging.getLogger("debate")
 
 DEBATES_FILE = Path(__file__).parent.parent / "zhihu_cache" / "debates.json"
 
+# In-memory limits to prevent OOM
+MAX_DEBATES = 50
+MAX_REACTIONS = 200
+MAX_PLAZA_COMMENTS = 200
+MAX_DEBATE_COMMENTS = 50
+
 # In-memory completed debate history, persisted to DEBATES_FILE
 completed_debates: list[dict] = []
 
@@ -27,6 +33,12 @@ auditorium_reactions: list[dict] = []
 # Plaza free comments (not tied to a specific debate)
 PLAZA_FILE = Path(__file__).parent.parent / "zhihu_cache" / "plaza.json"
 plaza_comments: list[dict] = []
+
+
+def _trim_list(lst: list, maxlen: int):
+    """Trim a list in-place to keep only the most recent maxlen items."""
+    if len(lst) > maxlen:
+        del lst[:len(lst) - maxlen]
 
 
 def _load_plaza():
@@ -98,8 +110,20 @@ def _save_replay(debate_id: str, payload: dict):
     try:
         p = DEBATES_FILE.parent / f"debate_{debate_id}.json"
         p.write_text(json.dumps(payload, ensure_ascii=False))
+        _cleanup_replay_files()
     except Exception as e:
         log.warning("Failed to save replay for %s: %s", debate_id, e)
+
+
+def _cleanup_replay_files(max_files: int = 50):
+    """Remove oldest replay files if too many exist."""
+    replay_files = sorted(DEBATES_FILE.parent.glob("debate_*.json"), key=lambda p: p.stat().st_mtime)
+    if len(replay_files) > max_files:
+        for f in replay_files[:len(replay_files) - max_files]:
+            try:
+                f.unlink()
+            except Exception:
+                pass
 
 
 def load_replay(debate_id: str) -> dict | None:
@@ -448,6 +472,7 @@ async def generate(
                     "ts": time.time(),
                 }
                 auditorium_reactions.append(reaction_entry)
+                _trim_list(auditorium_reactions, MAX_REACTIONS)
                 if database.is_enabled():
                     database.add_reaction(reaction_entry)
                     database.sync()
@@ -484,6 +509,7 @@ async def generate(
         "chars": chars,
         "consensus_items": consensus_items,
     })
+    _trim_list(completed_debates, MAX_DEBATES)
 
     # Persist to DB or file
     if database.is_enabled():
@@ -556,6 +582,7 @@ async def _auto_agent_comments(debate_id: str, topic: str, golden_quote: str):
                 if "comments" not in entry:
                     entry["comments"] = []
                 entry["comments"].append(comment)
+                _trim_list(entry["comments"], MAX_DEBATE_COMMENTS)
 
             # Persist to DB
             database.add_comment(comment)
@@ -592,6 +619,7 @@ async def _auto_agent_comments(debate_id: str, topic: str, golden_quote: str):
                                         if "comments" not in entry:
                                             entry["comments"] = []
                                         entry["comments"].append(comment)
+                                        _trim_list(entry["comments"], MAX_DEBATE_COMMENTS)
                                     database.add_comment(comment)
                                     database.sync()
                                     log.info("Retry agent comment succeeded for %s", name)

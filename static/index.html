@@ -2114,7 +2114,7 @@ function renderConsensus() {
   itemsEl.innerHTML = consensusData.map(c => `
     <div class="consensus-item">
       <div class="pct">${c.pct}</div>
-      <div class="label">${c.label}<br>${c.detail || ''}</div>
+      <div class="label">${_esc(c.label)}<br>${_esc(c.detail || '')}</div>
     </div>
   `).join('');
 
@@ -2369,8 +2369,8 @@ function showVS(leftId, rightId) {
     const names = $('vsNames');
     const L = CHARS[leftId] || {emoji:'?',name:'?',color:'#999'}, R = CHARS[rightId] || {emoji:'?',name:'?',color:'#999'};
     names.innerHTML = `
-      <div class="vs-side"><div class="vs-emoji">${L.emoji}</div><div class="vs-name" style="color:${L.color}">${L.name}</div></div>
-      <div class="vs-side"><div class="vs-emoji">${R.emoji}</div><div class="vs-name" style="color:${R.color}">${R.name}</div></div>
+      <div class="vs-side"><div class="vs-emoji">${_esc(L.emoji)}</div><div class="vs-name" style="color:${_esc(L.color)}">${_esc(L.name)}</div></div>
+      <div class="vs-side"><div class="vs-emoji">${_esc(R.emoji)}</div><div class="vs-name" style="color:${_esc(R.color)}">${_esc(R.name)}</div></div>
     `;
     splash.classList.add('active');
     SFX.whoosh();
@@ -2779,7 +2779,7 @@ async function checkAuth() {
       $('loginGate').classList.add('hidden');
       $('secondmeBar').innerHTML = `
         <div class="secondme-icon">🤖</div>
-        <div class="secondme-text">✅ ${data.name} 的 AI 分身已就位 · 辩论中将自动出庭</div>
+        <div class="secondme-text">✅ ${_esc(data.name)} 的 AI 分身已就位 · 辩论中将自动出庭</div>
         <button class="secondme-logout" onclick="window.location.href='/api/auth/logout'">退出登录</button>
       `;
       window._secondMeSession = true;
@@ -2940,7 +2940,7 @@ $('btnPoster').addEventListener('click', async (e) => {
   $('posterConsensus').innerHTML = consensusData.map(c => `
     <div class="poster-citem">
       <div class="cpct">${c.pct}</div>
-      <div class="clbl">${c.label}</div>
+      <div class="clbl">${_esc(c.label)}</div>
     </div>
   `).join('');
 
