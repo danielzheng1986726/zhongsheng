@@ -1649,7 +1649,7 @@
     在<em>模拟法庭</em>里上演辩论。<br>
     让你的 <em>Second Me 分身</em>出庭旁听。
   </div>
-  <button class="login-gate-btn" onclick="window.location.href='/api/auth/login'">用 Second Me 登录</button>
+  <button class="login-gate-btn" onclick="openLoginPopup()">用 Second Me 登录</button>
   <div class="login-gate-hint">需要 Second Me 账号 · 授权后即可体验</div>
 </div>
 
@@ -2792,8 +2792,31 @@ async function checkAuth() {
 checkAuth();
 
 $('secondmeLogin').addEventListener('click', () => {
-  window.location.href = '/api/auth/login';
+  openLoginPopup();
 });
+
+// ========= Popup OAuth Login =========
+function openLoginPopup() {
+  const w = 500, h = 700;
+  const left = (screen.width - w) / 2;
+  const top = (screen.height - h) / 2;
+  const popup = window.open(
+    '/api/auth/login',
+    'secondme_login',
+    `width=${w},height=${h},left=${left},top=${top},scrollbars=yes`
+  );
+  // Listen for popup close → re-check auth
+  const timer = setInterval(() => {
+    if (popup && popup.closed) {
+      clearInterval(timer);
+      checkAuth();
+    }
+  }, 500);
+}
+// Called by popup callback page
+window._onLoginSuccess = function() {
+  checkAuth();
+};
 
 
 // ========= Compose box handlers =========

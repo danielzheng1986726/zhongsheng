@@ -4,7 +4,7 @@ import os
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Request, Response
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from itsdangerous import URLSafeTimedSerializer
 
 from services import secondme, database
@@ -94,14 +94,29 @@ async def callback(request: Request, code: str = ""):
             database.upsert_user(user_name, user_avatar, access_token, refresh_token)
             database.sync()
 
-        response = RedirectResponse("/")
+        # Close popup and notify parent page
+        html = """<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>
+        <p>登录成功，正在返回…</p>
+        <script>
+        if (window.opener) {
+            try { window.opener._onLoginSuccess(); } catch(e) {}
+            window.close();
+        } else {
+            window.location.href = '/';
+        }
+        </script></body></html>"""
+        response = HTMLResponse(html)
         _set_session(response, session)
         return response
     except Exception as e:
         import logging
         logging.getLogger("auth").exception("OAuth callback failed")
         from urllib.parse import quote
-        return RedirectResponse(f"/?error=auth_failed&detail={quote(str(e))}")
+        html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>
+        <p>登录失败：{quote(str(e))}</p>
+        <script>setTimeout(function(){{ window.close(); }}, 3000);</script>
+        </body></html>"""
+        return HTMLResponse(html, status_code=400)
 
 
 @router.get("/logout")
