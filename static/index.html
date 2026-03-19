@@ -599,6 +599,18 @@
     transform: skewX(-4deg);
   }
   .secondme-btn:hover { transform: skewX(-4deg) scale(1.05); }
+  .secondme-logout {
+    background: transparent;
+    border: 1px solid #555;
+    color: #888;
+    padding: 5px 12px;
+    border-radius: 2px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+  }
+  .secondme-logout:hover { border-color: #e6002e; color: #e6002e; }
 
   /* ============ Loading Page ============ */
   .loading-page {
@@ -2768,6 +2780,7 @@ async function checkAuth() {
       $('secondmeBar').innerHTML = `
         <div class="secondme-icon">🤖</div>
         <div class="secondme-text">✅ ${data.name} 的 AI 分身已就位 · 辩论中将自动出庭</div>
+        <button class="secondme-logout" onclick="window.location.href='/api/auth/logout'">退出登录</button>
       `;
       window._secondMeSession = true;
       updatePlazaAgentBtn();
