@@ -1,6 +1,8 @@
 # 众声 Voices — 项目交接文档
 
-> 粘贴到新对话开头即可无缝继续。最后更新：2026-03-17 晚。
+> 粘贴到新对话开头即可无缝继续。最后更新：2026-03-18。
+
+**最新会话总结**：`docs/HANDOFF-2026-03-18.md`（广场动态、融合流、布局讨论、待办事项）
 
 ---
 
@@ -21,7 +23,7 @@
 ```
 app.py              — FastAPI 入口，挂载路由和静态文件
 routers/auth.py     — Second Me OAuth2（登录/回调/登出/me）
-routers/api.py      — 业务 API（热榜/辩论生成/feed/theater/auditorium/seed/记忆写入）
+routers/api.py      — 业务 API（热榜/辩论生成/theater/plaza/unified-feed/seed/记忆写入）
 services/debate.py  — 辩论编排核心（阵营分析 → 剧本生成 → SSE 流式输出）
 services/llm.py     — 多模型 fallback 封装
 services/zhihu.py   — 知乎 Open API（热榜/搜索/圈子发布/评论/点赞）+ 文件缓存
@@ -88,7 +90,7 @@ curl -X POST https://zhongsheng.ai-builders.space/api/admin/seed -H 'Content-Typ
 |--------|------|------|
 | P1 | Demo 演示准备 | 预选稳定话题，确保现场不翻车 |
 | P1 | 推广引流 | OAuth 量是评奖指标。渠道：参赛群、朋友圈、知乎公域 |
-| P3 | Feed 互动 | 圈子点赞/评论功能（stretch，可不做） |
+| P2 | 融合流布局 | 热榜+广场混排，Web/移动响应式。详见 docs/HANDOFF-2026-03-18.md |
 
 ---
 
