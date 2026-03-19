@@ -66,8 +66,6 @@ async def generate_debate(request: Request):
             topic = resolved
 
     if not topic:
-        from fastapi.responses import StreamingResponse
-
         async def _err():
             yield f"data: {json.dumps({'phase': 'error', 'message': '请输入讨论话题'}, ensure_ascii=False)}\n\n"
 
