@@ -7,7 +7,7 @@ import os
 import time
 
 from fastapi import APIRouter, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from services import zhihu, debate, secondme, database
 from routers.auth import _get_session
@@ -15,6 +15,9 @@ from routers.auth import _get_session
 log = logging.getLogger("api")
 
 ADMIN_TOKEN = os.getenv("AI_BUILDER_TOKEN", "")
+
+# Lock for concurrent write operations (comments, likes)
+_write_lock = asyncio.Lock()
 
 router = APIRouter(prefix="/api", tags=["api"])
 
@@ -123,7 +126,7 @@ async def get_debate(debate_id: str):
     """Return a single debate's data (likes, comments, etc.)."""
     entry = debate.find_debate(debate_id)
     if not entry:
-        return {"error": "debate not found"}
+        return JSONResponse({"error": "debate not found"}, status_code=404)
     return {
         "ok": True,
         "id": entry.get("id"),
@@ -161,22 +164,37 @@ async def replay_debate(debate_id: str):
             "likes": likes,
             "comments": comments,
         }
-    return {"error": "replay not found"}
+    return JSONResponse({"error": "replay not found"}, status_code=404)
+
+
+# Track likes by IP+debate to prevent spam
+_like_tracker: set[str] = set()
 
 
 @router.post("/debate/{debate_id}/like")
-async def like_debate(debate_id: str):
+async def like_debate(debate_id: str, request: Request):
     """Increment like count for a debate. Syncs to Zhihu circle if pin_token exists."""
     entry = debate.find_debate(debate_id)
     if not entry:
-        return {"error": "debate not found"}
+        return JSONResponse({"error": "debate not found"}, status_code=404)
 
-    entry["likes"] = entry.get("likes", 0) + 1
-    if database.is_enabled():
-        database.update_likes(debate_id, entry["likes"])
-        database.sync()
-    else:
-        debate.save_debates()
+    # Dedup by IP + debate_id
+    client_ip = request.client.host if request.client else "unknown"
+    like_key = f"{client_ip}:{debate_id}"
+    if like_key in _like_tracker:
+        return {"ok": True, "likes": entry.get("likes", 0), "already_liked": True}
+    _like_tracker.add(like_key)
+    # Prevent tracker from growing unbounded
+    if len(_like_tracker) > 10000:
+        _like_tracker.clear()
+
+    async with _write_lock:
+        entry["likes"] = entry.get("likes", 0) + 1
+        if database.is_enabled():
+            database.update_likes(debate_id, entry["likes"])
+            database.sync()
+        else:
+            debate.save_debates()
 
     pin_token = entry.get("pin_token")
     if pin_token:
@@ -208,14 +226,16 @@ async def comment_debate(debate_id: str, request: Request):
         "debate_id": debate_id,
         "ts": time.time(),
     }
-    if "comments" not in entry:
-        entry["comments"] = []
-    entry["comments"].append(comment)
-    if database.is_enabled():
-        database.add_comment(comment)
-        database.sync()
-    else:
-        debate.save_debates()
+    async with _write_lock:
+        if "comments" not in entry:
+            entry["comments"] = []
+        entry["comments"].append(comment)
+        debate._trim_list(entry["comments"], debate.MAX_DEBATE_COMMENTS)
+        if database.is_enabled():
+            database.add_comment(comment)
+            database.sync()
+        else:
+            debate.save_debates()
 
     pin_token = entry.get("pin_token")
     if pin_token:
@@ -338,7 +358,10 @@ async def plaza_free_comment(request: Request):
 
     Body: {"text": "...", "nickname": "匿名旁听"}
     """
-    body = await request.json()
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "invalid request body"}, status_code=400)
     text = body.get("text", "").strip()
     if not text:
         return {"error": "text is required"}
@@ -352,6 +375,7 @@ async def plaza_free_comment(request: Request):
         "ts": time.time(),
     }
     debate.plaza_comments.append(comment)
+    debate._trim_list(debate.plaza_comments, debate.MAX_PLAZA_COMMENTS)
     if database.is_enabled():
         database.add_comment(comment)
         database.sync()
@@ -405,6 +429,7 @@ async def agent_comment(request: Request):
         if "comments" not in entry:
             entry["comments"] = []
         entry["comments"].append(comment)
+        debate._trim_list(entry["comments"], debate.MAX_DEBATE_COMMENTS)
         if database.is_enabled():
             database.add_comment(comment)
             database.sync()
@@ -449,7 +474,7 @@ def _check_admin(request: Request) -> bool:
 async def admin_users(request: Request):
     """Return registered user count and names (no tokens exposed)."""
     if ADMIN_TOKEN and not _check_admin(request):
-        return {"error": "unauthorized"}
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
     if not database.is_enabled():
         return {"count": 0, "users": []}
     users = database.get_all_users()
@@ -467,7 +492,7 @@ async def seed_debates(request: Request):
     Fires debates in background and returns immediately.
     """
     if ADMIN_TOKEN and not _check_admin(request):
-        return {"error": "unauthorized"}
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
     body = await request.json() if request.headers.get("content-type") else {}
     count = min(body.get("count", 3), 5)
 

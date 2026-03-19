@@ -106,10 +106,21 @@ async def get_hotlist(top_cnt: int = 50, publish_in_hours: int = 48) -> list:
     return FALLBACK_HOTLIST
 
 
+def _cleanup_search_cache(max_files: int = 100):
+    """Remove oldest search cache files if too many exist."""
+    search_files = sorted(CACHE_DIR.glob("search_*.json"), key=lambda p: p.stat().st_mtime)
+    if len(search_files) > max_files:
+        for f in search_files[:len(search_files) - max_files]:
+            try:
+                f.unlink()
+            except Exception:
+                pass
+
+
 async def search(query: str, count: int = 10) -> list:
-    """Search Zhihu. Results cached permanently by query hash."""
+    """Search Zhihu. Results cached for 24 hours by query hash."""
     qhash = hashlib.sha256(query.encode()).hexdigest()[:16]
-    cached = _read_cache(f"search_{qhash}")
+    cached = _read_cache(f"search_{qhash}", max_age=86400)  # 24h expiry
     if cached is not None:
         return cached
 
@@ -134,6 +145,7 @@ async def search(query: str, count: int = 10) -> list:
             _write_cache(f"search_{qhash}", items)
             budget["used"] += 1
             _write_cache("_budget", budget)
+            _cleanup_search_cache()
             return items
     except Exception:
         return []
@@ -142,6 +154,14 @@ async def search(query: str, count: int = 10) -> list:
 async def get_question_title(url: str) -> str:
     """Extract question title from a Zhihu URL by fetching the page."""
     import re
+    from urllib.parse import urlparse
+    # Only allow Zhihu domains to prevent SSRF
+    try:
+        parsed = urlparse(url)
+        if parsed.hostname and not parsed.hostname.endswith("zhihu.com"):
+            return ""
+    except Exception:
+        return ""
     try:
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
             r = await c.get(url, headers={"User-Agent": "Mozilla/5.0"})

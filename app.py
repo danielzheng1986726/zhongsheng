@@ -13,6 +13,17 @@ from services import database, debate  # noqa: E402
 
 app = FastAPI(title="众声 Voices", version="2.0.0")
 
+
+@app.middleware("http")
+async def limit_request_body(request, call_next):
+    """Reject request bodies larger than 1MB to prevent memory abuse."""
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > 1_048_576:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"error": "request body too large"}, status_code=413)
+    return await call_next(request)
+
+
 app.include_router(auth.router)
 app.include_router(api.router)
 
