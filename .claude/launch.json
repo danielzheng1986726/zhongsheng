@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "uvicorn", "app:app", "--port", "8000"],
       "port": 8000
+    },
+    {
+      "name": "cue-cards",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "-d", "/Users/xiaodongzheng/Projects/active/zhongsheng/promo"],
+      "port": 8765
     }
   ]
 }
