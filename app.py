@@ -3,6 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
@@ -12,6 +13,14 @@ from routers import auth, api, mcp  # noqa: E402
 from services import database, debate  # noqa: E402
 
 app = FastAPI(title="众声 Voices", version="2.0.0")
+
+# CORS for MCP endpoint (Second Me validation + OpenClaw agents)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
