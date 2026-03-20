@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 
 load_dotenv()
 
-from routers import auth, api  # noqa: E402
+from routers import auth, api, mcp  # noqa: E402
 from services import database, debate  # noqa: E402
 
 app = FastAPI(title="众声 Voices", version="2.0.0")
@@ -26,6 +26,7 @@ async def limit_request_body(request, call_next):
 
 app.include_router(auth.router)
 app.include_router(api.router)
+app.include_router(mcp.router)
 
 
 @app.on_event("startup")
