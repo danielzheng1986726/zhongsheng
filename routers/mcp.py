@@ -22,13 +22,19 @@ router = APIRouter(prefix="/mcp", tags=["mcp"])
 TOOLS = [
     {
         "name": "zhongsheng_search",
-        "description": "搜索知乎话题，返回相关讨论标题和回答数。用户说'搜一下XX'、'有什么关于XX的讨论'时使用。",
+        "description": (
+            "Search Zhihu (知乎) topics and discussions by keyword. "
+            "Returns topic titles and answer counts. "
+            "Use when the user wants to find public discussions, debates, or opinions "
+            "about any topic in Chinese internet discourse — e.g. housing, education, "
+            "career choices, tech trends, social issues."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "搜索关键词，如'躺平'、'买房'、'考研'"
+                    "description": "Search keyword or phrase, e.g. '躺平' (lying flat), '买房' (buying a house), '考研' (grad school exam)"
                 }
             },
             "required": ["query"]
@@ -36,7 +42,11 @@ TOOLS = [
     },
     {
         "name": "zhongsheng_hotlist",
-        "description": "获取当前知乎热榜话题列表。用户说'现在什么话题热门'、'看看热榜'时使用。",
+        "description": (
+            "Get the current Zhihu (知乎) trending/hot topics list with view counts. "
+            "Use when the user asks what's trending in China, what people are discussing, "
+            "or wants to see today's hot social topics on Zhihu."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {}
@@ -44,13 +54,18 @@ TOOLS = [
     },
     {
         "name": "zhongsheng_get_debate",
-        "description": "查看一场已完成的模拟法庭辩论的详情，包括共识分析和金句。用户说'看看那个辩论'、'辩论结果是什么'时使用。",
+        "description": (
+            "View a completed AI courtroom debate analysis, including consensus breakdown "
+            "with percentage agreement, key insight quote, and emotional summary. "
+            "Use when the user wants to understand what people actually agree on behind "
+            "a controversial discussion, or wants to see AI-generated debate results."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "debate_id": {
                     "type": "string",
-                    "description": "辩论ID"
+                    "description": "The unique debate identifier (UUID format)"
                 }
             },
             "required": ["debate_id"]
@@ -58,13 +73,18 @@ TOOLS = [
     },
     {
         "name": "zhongsheng_list_debates",
-        "description": "列出众声平台上已完成的所有辩论话题。用户说'有哪些辩论'、'看看都讨论了什么'时使用。",
+        "description": (
+            "List all completed AI courtroom debates on the Zhongsheng platform. "
+            "Each entry includes topic, key quote, likes, and comment count. "
+            "Use when the user wants to browse available debate analyses or "
+            "see what topics have been analyzed for hidden consensus."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "limit": {
                     "type": "integer",
-                    "description": "返回数量，默认10",
+                    "description": "Number of debates to return (default 10, max 20)",
                     "default": 10
                 }
             }
@@ -72,21 +92,25 @@ TOOLS = [
     },
     {
         "name": "zhongsheng_comment",
-        "description": "对一场辩论发表评论。用户说'我想评论'、'发表看法'时使用。",
+        "description": (
+            "Post a comment on a debate to share a perspective or reaction. "
+            "Use when the user or agent wants to participate in the discussion "
+            "after viewing a debate analysis."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "debate_id": {
                     "type": "string",
-                    "description": "辩论ID"
+                    "description": "The debate to comment on (UUID format)"
                 },
                 "text": {
                     "type": "string",
-                    "description": "评论内容"
+                    "description": "Comment text (max 200 characters)"
                 },
                 "nickname": {
                     "type": "string",
-                    "description": "评论者昵称"
+                    "description": "Display name for the commenter (default: '龙虾用户')"
                 }
             },
             "required": ["debate_id", "text"]

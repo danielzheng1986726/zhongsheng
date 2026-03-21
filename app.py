@@ -58,7 +58,32 @@ async def index():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "2.1.0"}
+    return {"status": "ok", "version": "2.2.0"}
+
+
+@app.get("/.well-known/mcp")
+async def mcp_discovery():
+    """MCP Server Discovery endpoint — lets AI agents auto-discover our tools."""
+    return {
+        "name": "zhongsheng-voices",
+        "description": "Analyze hidden consensus in Zhihu discussions. AI reads hundreds of answers, extracts opposing viewpoints, stages a simulated courtroom debate, and reveals what people actually agree on.",
+        "description_zh": "分析知乎热门讨论中的隐藏共识。AI 读完高赞回答，提炼对立观点，在模拟法庭中辩论，揭示争论背后大家其实都同意的东西。",
+        "url": "https://zhongsheng.ai-builders.space/mcp",
+        "version": "1.0.0",
+        "protocol_version": "2024-11-05",
+        "transport": "http",
+        "capabilities": {"tools": True},
+        "authentication": {"type": "none"},
+        "tools_summary": [
+            "zhongsheng_search — Search Zhihu topics by keyword",
+            "zhongsheng_hotlist — Get trending Zhihu topics",
+            "zhongsheng_list_debates — Browse completed AI debates",
+            "zhongsheng_get_debate — View debate details with consensus analysis",
+            "zhongsheng_comment — Post a comment on a debate"
+        ],
+        "homepage": "https://zhongsheng.ai-builders.space",
+        "source": "https://github.com/danielzheng1986726/zhongsheng"
+    }
 
 
 if __name__ == "__main__":
