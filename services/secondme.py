@@ -6,8 +6,17 @@ import json
 import httpx
 
 BASE = "https://api.mindverse.com/gate/lab"
-CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "1709f9d0-7c9f-4d6e-b45e-fa7386ed0772")
-CLIENT_SECRET = os.getenv("SECONDME_CLIENT_SECRET", "REDACTED_SECONDME_CLIENT_SECRET")
+
+
+def _required_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise RuntimeError(f"{name} is required")
+    return value
+
+
+CLIENT_ID = _required_env("SECONDME_CLIENT_ID")
+CLIENT_SECRET = _required_env("SECONDME_CLIENT_SECRET")
 
 
 async def exchange_code(code: str, redirect_uri: str) -> dict:
@@ -28,7 +37,7 @@ async def exchange_code(code: str, redirect_uri: str) -> dict:
         )
         r.raise_for_status()
         body = r.json()
-        log.warning(f"SecondMe token response: {json.dumps(body, ensure_ascii=False)[:500]}")
+        log.info("SecondMe token response keys: %s", list(body.keys()))
         if body.get("code") != 0:
             raise ValueError(f"SecondMe token error: {body}")
         data = body.get("data", body)

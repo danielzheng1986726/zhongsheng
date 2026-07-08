@@ -1,26 +1,18 @@
-"""Zhihu API client with file-based caching.
-
-Signing: HMAC-SHA256 over 'app_key:{ak}|ts:{ts}|logid:{logid}|extra_info:' → Base64.
-Headers: X-App-Key, X-Timestamp, X-Log-Id, X-Sign, X-Extra-Info.
-"""
+"""Zhihu API client with file-based caching."""
 
 import os
 import json
 import hashlib
-import hmac
 import time
-import base64
-import uuid
 from pathlib import Path
 
 import httpx
 
-API_BASE = "https://openapi.zhihu.com"
+API_BASE = "https://developer.zhihu.com/api/v1/content"
 CACHE_DIR = Path(__file__).parent.parent / "zhihu_cache"
 CACHE_DIR.mkdir(exist_ok=True)
 
-AK = os.getenv("ZHIHU_AK", "zheng-xiao-dong-58")
-SK = os.getenv("ZHIHU_SK", "REDACTED_ZHIHU_SK")
+ACCESS_KEY = os.getenv("ZHIHU_ACCESS_KEY", "").strip()
 
 # Hackathon circles
 CIRCLE_IDS = ["2001009660925334090", "2015023739549529606"]
@@ -39,20 +31,14 @@ FALLBACK_HOTLIST = [
 ]
 
 
-def _sign_headers() -> dict:
-    """Generate auth headers using Zhihu HMAC-SHA256 + Base64 signing."""
-    ts = str(int(time.time()))
-    log_id = f"zs_{uuid.uuid4().hex[:16]}"
-    sign_str = f"app_key:{AK}|ts:{ts}|logid:{log_id}|extra_info:"
-    signature = base64.b64encode(
-        hmac.new(SK.encode(), sign_str.encode(), hashlib.sha256).digest()
-    ).decode()
+def _auth_headers() -> dict:
+    """Generate Zhihu Developer Platform Bearer auth headers."""
+    if not ACCESS_KEY:
+        raise RuntimeError("ZHIHU_ACCESS_KEY is required")
     return {
-        "X-App-Key": AK,
-        "X-Timestamp": ts,
-        "X-Log-Id": log_id,
-        "X-Sign": signature,
-        "X-Extra-Info": "",
+        "Authorization": f"Bearer {ACCESS_KEY}",
+        "X-Request-Timestamp": str(int(time.time())),
+        "Content-Type": "application/json",
     }
 
 
@@ -77,27 +63,53 @@ def _write_cache(key: str, payload):
     p.write_text(json.dumps({"_cached_at": time.time(), "payload": payload}, ensure_ascii=False))
 
 
+def _normalize_hot_item(item: dict, index: int) -> dict:
+    return {
+        "title": item.get("Title", ""),
+        "heat": "",
+        "answer_count": 0,
+        "id": item.get("Url", "") or f"hot_{index}",
+        "link_url": item.get("Url", ""),
+        "thumbnail_url": item.get("ThumbnailUrl", ""),
+        "summary": item.get("Summary", ""),
+    }
+
+
+def _normalize_search_item(item: dict) -> dict:
+    content_text = item.get("ContentText", "")
+    return {
+        "title": item.get("Title", ""),
+        "answer_count": item.get("CommentCount", 0),
+        "content_text": content_text,
+        "content": content_text,
+        "link_url": item.get("Url", ""),
+        "content_type": item.get("ContentType", ""),
+        "author_name": item.get("AuthorName", ""),
+        "vote_up_count": item.get("VoteUpCount", 0),
+    }
+
+
 async def get_hotlist(top_cnt: int = 50, publish_in_hours: int = 48) -> list:
     """Fetch Zhihu hot list. Cached for 1 hour."""
     cached = _read_cache("hotlist", max_age=3600)
     if cached is not None:
         return cached
 
-    if not AK or not SK:
-        return FALLBACK_HOTLIST
-
+    headers = _auth_headers()
     try:
-        headers = _sign_headers()
         async with httpx.AsyncClient(timeout=10) as c:
             r = await c.get(
-                f"{API_BASE}/openapi/billboard/list",
+                f"{API_BASE}/hot_list",
                 headers=headers,
-                params={"top_cnt": top_cnt, "publish_in_hours": publish_in_hours},
+                params={"Limit": min(max(top_cnt, 1), 30)},
             )
             r.raise_for_status()
             body = r.json()
-            items = body.get("data", {}).get("list", [])
+            if body.get("Code") not in (0, None):
+                raise RuntimeError(f"Zhihu hotlist error: {body.get('Message', body.get('Code'))}")
+            items = body.get("Data", {}).get("Items", [])
             if items:
+                items = [_normalize_hot_item(item, i) for i, item in enumerate(items)]
                 _write_cache("hotlist", items)
                 return items
     except Exception:
@@ -128,20 +140,20 @@ async def search(query: str, count: int = 10) -> list:
     if budget["used"] >= 900:
         return []
 
-    if not AK or not SK:
-        return []
-
+    headers = _auth_headers()
     try:
-        headers = _sign_headers()
         async with httpx.AsyncClient(timeout=15) as c:
             r = await c.get(
-                f"{API_BASE}/openapi/search/global",
+                f"{API_BASE}/zhihu_search",
                 headers=headers,
-                params={"query": query, "count": min(count, 20)},
+                params={"Query": query, "Count": min(count, 10)},
             )
             r.raise_for_status()
             body = r.json()
-            items = body.get("data", {}).get("items", [])
+            if body.get("Code") not in (0, None):
+                raise RuntimeError(f"Zhihu search error: {body.get('Message', body.get('Code'))}")
+            items = body.get("Data", {}).get("Items", [])
+            items = [_normalize_search_item(item) for item in items]
             _write_cache(f"search_{qhash}", items)
             budget["used"] += 1
             _write_cache("_budget", budget)
@@ -185,87 +197,19 @@ async def get_question_title(url: str) -> str:
 
 async def publish_pin(content: str, title: str = "") -> dict:
     """Publish a pin (想法) to the hackathon circle."""
-    if not AK or not SK:
-        return {"error": "no credentials"}
-    headers = _sign_headers()
-    headers["Content-Type"] = "application/json"
-    payload = {
-        "content": content,
-        "ring_id": CIRCLE_ID,
-    }
-    if title:
-        payload["title"] = title
-    try:
-        async with httpx.AsyncClient(timeout=15) as c:
-            r = await c.post(f"{API_BASE}/openapi/publish/pin", headers=headers, json=payload)
-            r.raise_for_status()
-            return r.json()
-    except Exception as e:
-        return {"error": str(e)}
+    return {"error": "zhihu write APIs are not available on the current developer platform"}
 
 
 async def get_circle_posts(ring_id: str = "", page_num: int = 1, page_size: int = 20) -> list:
     """Get posts from a circle."""
-    rid = ring_id or CIRCLE_ID
-    if not AK or not SK:
-        return []
-    headers = _sign_headers()
-    try:
-        async with httpx.AsyncClient(timeout=10) as c:
-            r = await c.get(
-                f"{API_BASE}/openapi/ring/detail",
-                headers=headers,
-                params={"ring_id": rid, "page_num": page_num, "page_size": page_size},
-            )
-            r.raise_for_status()
-            body = r.json()
-            return body.get("data", {}).get("contents", [])
-    except Exception:
-        return []
+    return []
 
 
 async def react(content_type: str, content_token: str, action_value: int = 1) -> dict:
     """Like/unlike a post or comment. action_value: 1=like, 0=unlike."""
-    if not AK or not SK:
-        return {"error": "no credentials"}
-    headers = _sign_headers()
-    headers["Content-Type"] = "application/json"
-    try:
-        async with httpx.AsyncClient(timeout=10) as c:
-            r = await c.post(
-                f"{API_BASE}/openapi/reaction",
-                headers=headers,
-                json={
-                    "content_token": content_token,
-                    "content_type": content_type,
-                    "action_type": "like",
-                    "action_value": action_value,
-                },
-            )
-            r.raise_for_status()
-            return r.json()
-    except Exception as e:
-        return {"error": str(e)}
+    return {"error": "zhihu write APIs are not available on the current developer platform"}
 
 
 async def create_comment(content_type: str, content_token: str, content: str) -> dict:
     """Create a comment on a pin or reply to a comment."""
-    if not AK or not SK:
-        return {"error": "no credentials"}
-    headers = _sign_headers()
-    headers["Content-Type"] = "application/json"
-    try:
-        async with httpx.AsyncClient(timeout=10) as c:
-            r = await c.post(
-                f"{API_BASE}/openapi/comment/create",
-                headers=headers,
-                json={
-                    "content_token": content_token,
-                    "content_type": content_type,
-                    "content": content,
-                },
-            )
-            r.raise_for_status()
-            return r.json()
-    except Exception as e:
-        return {"error": str(e)}
+    return {"error": "zhihu write APIs are not available on the current developer platform"}

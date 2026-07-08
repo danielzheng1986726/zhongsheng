@@ -11,18 +11,15 @@ from services import secondme, database
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-SECRET_KEY = os.getenv("SECRET_KEY", "")
+SECRET_KEY = os.getenv("SESSION_SECRET", "").strip() or os.getenv("SECRET_KEY", "").strip()
 if not SECRET_KEY:
-    import secrets
-    SECRET_KEY = secrets.token_hex(32)
-    import logging
-    logging.getLogger("auth").warning("SECRET_KEY not set — generated random key (sessions won't survive restart)")
+    raise RuntimeError("SESSION_SECRET is required")
 COOKIE_NAME = "zs_session"
 MAX_AGE = 7 * 24 * 3600  # 7 days
 
 _signer = URLSafeTimedSerializer(SECRET_KEY)
 
-SECONDME_CLIENT_ID = os.getenv("SECONDME_CLIENT_ID", "1709f9d0-7c9f-4d6e-b45e-fa7386ed0772")
+SECONDME_CLIENT_ID = secondme.CLIENT_ID
 OAUTH_BASE = "https://go.second.me/oauth/"
 
 

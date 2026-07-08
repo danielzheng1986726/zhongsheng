@@ -55,7 +55,7 @@ git push origin main
 
 # 2. 触发部署（自动部署不可靠，用 API）
 curl --http1.1 -s -X POST "https://space.ai-builders.com/backend/v1/deployments" \
-  -H "Authorization: Bearer REDACTED_AI_BUILDER_TOKEN" \
+  -H "Authorization: Bearer ${AI_BUILDER_TOKEN}" \
   -H "Content-type: application/json" \
   -d '{"repo_url":"https://github.com/danielzheng1986726/zhongsheng","service_name":"zhongsheng","branch":"main","port":8000}'
 
