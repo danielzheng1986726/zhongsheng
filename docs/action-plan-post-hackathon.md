@@ -1,6 +1,7 @@
 # 众声 Post-Hackathon 行动计划
 
 > 基于两届黑客松复盘 + GTM 深度调研 + 项目审视。可执行，按周排列。
+> 数字口径：对外或半公开复用前先核 `docs/public-metrics.md`。
 
 ---
 
@@ -14,7 +15,7 @@
 - 标题方向：「一个 HR 用 AI 写代码参加黑客松，用户数垫底但拿了两个奖」
 - 内容要素：
   - 背景：零编码经验，用 Vibe Coding 一周做出完整产品
-  - 数据：108 人用户群但只有 17 个 OAuth（教训：Day 1 不设登录墙 = 白忙）
+  - 数据：115 人进群，第四天只有 17 个登录，最终 39 个用户（教训：Day 1 不设登录墙 = 白忙）
   - 转折：用户数倒数，但获得知乎特别奖（第九名）+ 知乎用户选择奖
   - 洞察：产品做得好 ≠ 用户数量多，GTM 是连接两者的桥梁
   - 金句：「他们以为自己在反对彼此，其实在反对同一堵墙」
@@ -31,7 +32,7 @@
 - 这种「反直觉技术决策」在开发者社区传播效果好
 
 **帖子 3：AI 时代 GTM 洞察（X/Twitter 英文线程）**
-- 标题方向：「I built a full product in 7 days. Got 17 users. Here's what I learned about GTM vs Code.」
+- 标题方向：「I built a full product in 7 days. Got 39 users. Here's what I learned about GTM vs Code.」
 - 内容要素：
   - Code is middleware now（引用 Karpathy/YC/Sequoia）
   - 黑客松第一名是全球化 + Day 1 登录墙，不是最好的产品
@@ -202,4 +203,5 @@ Build in Public 帖子
 ---
 
 *最后更新：2026-03-21*
+*2026-07-08 口径更新：最终用户数统一为 39；17 是第四天后台登录冲击点，不作为最终用户数。*
 *基于：两届黑客松复盘 + GTM 深度调研 + 项目审视*
