@@ -225,8 +225,8 @@ async def _handle_comment(args: dict) -> str:
     try:
         database.add_comment(comment)
         database.sync()
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("MCP comment persisted in memory only: %s", e)
     return json.dumps({"ok": True, "message": "评论已发布"}, ensure_ascii=False)
 
 

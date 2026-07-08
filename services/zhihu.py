@@ -3,10 +3,13 @@
 import os
 import json
 import hashlib
+import logging
 import time
 from pathlib import Path
 
 import httpx
+
+log = logging.getLogger("zhihu")
 
 API_BASE = "https://developer.zhihu.com/api/v1/content"
 CACHE_DIR = Path(__file__).parent.parent / "zhihu_cache"
@@ -51,16 +54,27 @@ def _read_cache(key: str, max_age: int = 0) -> dict | None:
     p = _cache_path(key)
     if not p.exists():
         return None
-    data = json.loads(p.read_text())
-    if max_age > 0:
-        if time.time() - data.get("_cached_at", 0) > max_age:
-            return None
-    return data.get("payload")
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        if max_age > 0:
+            if time.time() - data.get("_cached_at", 0) > max_age:
+                return None
+        return data.get("payload")
+    except (OSError, json.JSONDecodeError, TypeError) as e:
+        log.warning("Failed to read Zhihu cache %s: %s", key, e)
+        return None
 
 
 def _write_cache(key: str, payload):
     p = _cache_path(key)
-    p.write_text(json.dumps({"_cached_at": time.time(), "payload": payload}, ensure_ascii=False))
+    try:
+        CACHE_DIR.mkdir(exist_ok=True)
+        p.write_text(
+            json.dumps({"_cached_at": time.time(), "payload": payload}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+    except OSError as e:
+        log.warning("Failed to write Zhihu cache %s: %s", key, e)
 
 
 def _normalize_hot_item(item: dict, index: int) -> dict:
@@ -95,8 +109,8 @@ async def get_hotlist(top_cnt: int = 50, publish_in_hours: int = 48) -> list:
     if cached is not None:
         return cached
 
-    headers = _auth_headers()
     try:
+        headers = _auth_headers()
         async with httpx.AsyncClient(timeout=10) as c:
             r = await c.get(
                 f"{API_BASE}/hot_list",
@@ -112,8 +126,8 @@ async def get_hotlist(top_cnt: int = 50, publish_in_hours: int = 48) -> list:
                 items = [_normalize_hot_item(item, i) for i, item in enumerate(items)]
                 _write_cache("hotlist", items)
                 return items
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Zhihu hotlist unavailable; using fallback: %s", e)
 
     return FALLBACK_HOTLIST
 
@@ -125,8 +139,8 @@ def _cleanup_search_cache(max_files: int = 100):
         for f in search_files[:len(search_files) - max_files]:
             try:
                 f.unlink()
-            except Exception:
-                pass
+            except OSError as e:
+                log.warning("Failed to remove old Zhihu search cache %s: %s", f.name, e)
 
 
 async def search(query: str, count: int = 10) -> list:
@@ -140,8 +154,8 @@ async def search(query: str, count: int = 10) -> list:
     if budget["used"] >= 900:
         return []
 
-    headers = _auth_headers()
     try:
+        headers = _auth_headers()
         async with httpx.AsyncClient(timeout=15) as c:
             r = await c.get(
                 f"{API_BASE}/zhihu_search",
@@ -159,7 +173,8 @@ async def search(query: str, count: int = 10) -> list:
             _write_cache("_budget", budget)
             _cleanup_search_cache()
             return items
-    except Exception:
+    except Exception as e:
+        log.warning("Zhihu search failed for query hash %s: %s", qhash, e)
         return []
 
 
@@ -172,7 +187,8 @@ async def get_question_title(url: str) -> str:
         parsed = urlparse(url)
         if parsed.hostname and not parsed.hostname.endswith("zhihu.com"):
             return ""
-    except Exception:
+    except Exception as e:
+        log.warning("Invalid URL for title extraction: %s", e)
         return ""
     try:
         async with httpx.AsyncClient(timeout=10, follow_redirects=True) as c:
@@ -187,8 +203,8 @@ async def get_question_title(url: str) -> str:
                 title = re.sub(r'\s*[-–—]\s*\S+的(文章|回答).*$', '', title)
                 if title and title != '知乎':
                     return title
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Failed to resolve Zhihu question title: %s", e)
     return ""
 
 
