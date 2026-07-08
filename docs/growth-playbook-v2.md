@@ -1,5 +1,7 @@
 # 众声用户增长作战手册 v2
 
+> Historical pre-hackathon growth plan. The hackathon window has passed and the project is currently paused. Use `docs/public-metrics.md` for canonical numbers and `docs/action-plan-post-hackathon.md` for current narrative before reusing any claim.
+
 ## 战略定位
 
 - **目标**：知乎特别奖申报者中 OAuth Top 5 → 进决赛 → 靠评委 70% 拿奖

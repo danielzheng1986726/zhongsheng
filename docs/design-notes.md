@@ -1,5 +1,7 @@
 # 众声 设计笔记
 
+> Historical pre-hackathon design notes. Treat these as ideation records, not current product commitments. Check `docs/action-plan-post-hackathon.md` before reviving any feature or public claim.
+
 ## 加载页设计（优先级高）
 
 上一届教训：人格匹配报告加载近 1 分钟，只显示「匹配中」，用户大量流失。

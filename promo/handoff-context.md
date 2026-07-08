@@ -1,6 +1,8 @@
 # 众声 Voices — 项目交接文档
 
-> 粘贴到新对话开头即可无缝继续。最后更新：2026-03-18。
+> Historical promo handoff. The project is paused as of 2026-07-08; do not use this as the default startup surface. Current public-number canon lives in `docs/public-metrics.md`, and post-hackathon positioning lives in `docs/action-plan-post-hackathon.md`.
+>
+> 最后更新：2026-03-18。
 
 **最新会话总结**：`docs/HANDOFF-2026-03-18.md`（广场动态、融合流、布局讨论、待办事项）
 
