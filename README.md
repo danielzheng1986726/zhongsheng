@@ -5,7 +5,8 @@
 ## 当前状态
 
 - 项目处于暂停维护状态；本地修复可以继续做，部署和线上环境变量更新单独决定。
-- GitHub remote 仍存在，B0 已移除当前代码中的硬编码凭证，但旧凭证仍在历史/远端层，未做 history rewrite。
+- GitHub remote 仍存在；B0 已移除当前代码/文档中的硬编码凭证，并已完成 remote `main` history rewrite + fresh-clone 旧凭证形态扫描。
+- 剩余未完成项不是 GitHub history，而是暂停项目的服务端 credential rotation / runtime env 复核；恢复部署前需单独检查 Koyeb / AI Builder Space 等线上环境。
 - `.env`、本地数据库、知乎缓存和工具运行态不入库。
 
 ## 本地准备
