@@ -51,14 +51,15 @@ app.mount("/img", StaticFiles(directory=static_dir / "img"), name="img")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
-@app.get("/")
+# Koyeb health checks use HEAD, which FastAPI's @app.get rejects with 405
+@app.api_route("/", methods=["GET", "HEAD"])
 async def index():
     return FileResponse(static_dir / "index.html")
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
-    return {"status": "ok", "version": "2.2.0"}
+    return {"status": "ok", "version": "2.2.1"}
 
 
 @app.get("/.well-known/mcp")
