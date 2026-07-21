@@ -4,9 +4,10 @@
 
 ## 当前状态
 
-- 项目处于暂停维护状态；本地修复可以继续做，部署和线上环境变量更新单独决定。
-- GitHub remote 仍存在；B0 已移除当前代码/文档中的硬编码凭证，并已完成 remote `main` history rewrite + fresh-clone 旧凭证形态扫描。
-- 剩余未完成项不是 GitHub history，而是暂停项目的服务端 credential rotation / runtime env 复核；恢复部署前需单独检查 Koyeb / AI Builder Space 等线上环境。
+- 项目处于暂停维护状态，但线上服务已恢复健康：2026-07-21 完成服务端 credential 重注入与重新部署（v2.2.1），登录链路与 MCP discovery 均已验证可用，平台状态 HEALTHY。
+- B0 已移除当前代码/文档中的硬编码凭证，并已完成 remote `main` history rewrite + fresh-clone 旧凭证形态扫描；B0 遗留的服务端 runtime env 复核已随本次重新部署完成。
+- 仓库为 public（AI Builder Space 构建器需匿名 clone；仓库转 private 会导致部署静默失败——详见部署踩坑记录）。
+- 重新部署时需通过部署 API 重传全部环境变量（平台 env_vars 不持久）。
 - `.env`、本地数据库、知乎缓存和工具运行态不入库。
 
 ## 本地准备
